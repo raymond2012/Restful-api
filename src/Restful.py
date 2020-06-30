@@ -4,11 +4,7 @@ import pytest
 import datetime
 import logging
 
-base_url = "http://api-dev.dress-as.com:4460"
-login_url = "/users/login/"
-register_url = "/users/register/"
-logout_url = "/users/logout/"
-google_sign_in_url = "/users/login/google"
+base_url = "http://api-dev.dress-as.com:4460/users/"
 
 
 ### Authorization ###
@@ -17,14 +13,14 @@ def login(email, password, user_id):
     data_get = {'device_id': user_id,
                 'email': email,
                 'password': password}
-    r = requests.Session().post(base_url + login_url, data=data_get)
+    r = requests.Session().post(base_url + "login", data=data_get)
     result = json.loads(r.content.decode('utf-8'))
     # print('Status Code: ', r.status_code)
     if r.status_code == 200:
         if result['account_type'] == "application" and result['token'] is not None:
             print(result)
             print_output(r.headers['Date'], "Pass", "Email login successful", "Login", r.status_code)
-            return result['token']
+            return result
         else:
             print("unexpected error")
     elif r.status_code == 400 or r.status_code == 403:
@@ -38,7 +34,7 @@ def register(email, password, device_id, location):
                 'password': password,
                 'device_id': device_id,
                 "location": location}
-    r = requests.post(base_url + register_url, data=data_get)
+    r = requests.post(base_url + "register", data=data_get)
     result = json.loads(r.content.decode('utf-8'))
     print(r.status_code)
     if r.status_code == 200:
@@ -57,7 +53,7 @@ def register(email, password, device_id, location):
 def logout(token):
     logging.debug("Logout")
     headers_get = {'Authorization': "bearer " + token}
-    r = requests.post(base_url + logout_url, headers=headers_get)
+    r = requests.post(base_url + "logout", headers=headers_get)
     print(r.status_code)
     result = json.loads(r.content.decode('utf-8'))
     if r.status_code == 200:
@@ -73,7 +69,7 @@ def signin_with_google(id, token):
     logging.debug("Sign-in with Google")
     data_get = {"id_token": token,
                 "device_id": id}
-    r = requests.post(base_url + google_sign_in_url, data=data_get)
+    r = requests.post(base_url + "login/google", data=data_get)
     result = json.loads(r.content.decode('utf-8'))
     if r.status_code == 200:
         print(r.headers)
@@ -107,15 +103,16 @@ def change_password(id, token, curr, new):
         if result is not None:
             return result['error']
 
-
+###Users###
 def get_user_profile(id):
     logging.debug("Get User Profile")
-    url = base_url + "/user/" + id + "/profile"
+    url = base_url + id + "/profile"
     r = requests.get(url)
     print(r.status_code)
     print(url)
     if r.content is not None:
         if r.status_code == 200:
+            print(r.content)
             result = json.loads(r.content.decode('utf-8'))
             return result
         elif r.status_code == 404:
@@ -125,11 +122,10 @@ def get_user_profile(id):
 
 def update_user_profile(id, token, edit_profile):
     logging.debug("Update User Profile")
-    cur_profile = get_user_profile(id)
     if cur_profile is not None:
-        data_get = cur_profile.update(edit_profile)
+        data_get = edit_profile
         header_get = {"Authorization": "Bearer " + token}
-        r = requests.post(base_url + "/users/" + id + "/profile", headers=header_get, data=data_get)
+        r = requests.patch(base_url + id + "/profile", headers=header_get, data=data_get)
         if r.status_code == 200:
             logging.debug("Update Successful")
         elif r.status_code == 400 or r.status_code == 401 or r.status_code == 500:
@@ -146,7 +142,7 @@ def upload_user_profile_pic(id, token, name, body):
         "image_name": name,
         "image_body": body
     }
-    r = requests.post(base_url + "/users/" + id + "/propic", headers=header_get, data=data_get)
+    r = requests.post(base_url + id + "/propic", headers=header_get, data=data_get)
     if r.status_code == 200:
         logging.debug("Upload Successful")
         return
@@ -158,9 +154,9 @@ def upload_user_profile_pic(id, token, name, body):
 def delete_user_profile_pic(id, token):
     logging.debug("Delete User Profile Pic")
     header_get = {"Authorization": "Bearer " + token}
-    r = requests.delete(base_url + "/user/" + id + "/propic", headers=header_get)
+    r = requests.delete(base_url + id + "/propic", headers=header_get)
     if r.status_code == 200:
-        logging.debug("Delete Successful")
+        logging.debug("Delete Profile Picture Successful")
         return
     elif r.status_code == 401:
         if r.content is not None:
@@ -170,26 +166,29 @@ def delete_user_profile_pic(id, token):
 def get_follower(id, token):
     logging.debug("Get Follower")
     header_get = {"Authorization": "Bearer " + token}
-    r = requests.get(base_url + "/user/" + id + "/follower", headers=header_get)
+    r = requests.get(base_url + id + "/follower", headers=header_get)
     if r.status_code == 200:
+        print(r.content)
         return json.loads(r.content.decode('utf-8'))
 
 
 def get_following(id, token):
     logging.debug("Get Following")
     header_get = {"Authorization": "Bearer " + token}
-    r = requests.get(base_url + "/user/" + id + "/following", headers=header_get)
+    r = requests.get(base_url + id + "/following", headers=header_get)
     if r.status_code == 200:
+        print(r.content)
         return json.loads(r.content.decode('utf-8'))
 
 
 def follow_user(blogger_id, id, token):
-    logging.debug("Follow a User")
+    logging.info("Follow a User")
     header_get = {"Authorization": "Bearer " + token}
-    r = requests.get(base_url + "/user/" + id + "/follow/" + blogger_id, headers=header_get)
+    r = requests.post( base_url + id + "/follow/" + blogger_id, headers=header_get)
+    print(r.status_code)
     if r.status_code == 201:
         logging.debug("Follow a user successfully")
-    elif r.status_code == 400 or r.status_code == 401 or r.status_code == 500:
+    elif r.status_code >= 400:
         if r.content is not None:
             return json.loads(r.content.decode('utf-8'))['error']
 
@@ -197,7 +196,7 @@ def follow_user(blogger_id, id, token):
 def unfollow_user(blogger_id, id, token):
     logging.debug("Unfollow a User")
     header_get = {"Authorization": "Bearer " + token}
-    r = requests.delete(base_url + "/user/" + id + "/follow/" + blogger_id, headers=header_get)
+    r = requests.delete(base_url + id + "/follow/" + blogger_id, headers=header_get)
     if r.status_code == 201:
         logging.debug("Unfollow a user successfully")
     elif r.status_code == 400 or r.status_code == 401 or r.status_code == 500:
@@ -213,8 +212,17 @@ def print_output(time, success, name, task, code):
 
 
 def main():
-    login("test3@gmail.com", "12345677", "12345")
-    get_user_profile("2")
+    # result = login("test3@gmail.com", "12345677", "12345")
+    token = str(result['token'])
+    id = str(result['user_id'])
+    print(id)
+    # update_user_profile(id, token, {"firstname": "HO", "lastname": "Raymond"})
+    # get_user_profile(id)
+    # get_follower(id, token)
+
+    # follow_user('5116', id, token)
+    unfollow_user('5116', id, token)
+    get_following(id, token)
     # login("", "12345677", "12345")
     # login("test3@gmail.com", "", "12345")
     # login("test3@gmail.com", "12345677", "")

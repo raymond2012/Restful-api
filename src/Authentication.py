@@ -6,7 +6,7 @@ class authentication:
         self.email = email
         self.password = password
         self.device_id = device_id
-        self.url = "http://api-dev.dress-as.com:4460/users/login/"
+        self.url = "http://api-dev.dress-as.com:4460/users/"
         self.__result = ""
 
     def login(self):
