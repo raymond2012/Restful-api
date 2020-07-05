@@ -3,10 +3,10 @@ import json
 
 
 class Authentication:
-    def __init__(self, email, password, device_id):
+    def __init__(self, email, password, dev_id):
         self.__email = email
         self.__password = password
-        self.__device_id = device_id
+        self.__dev_id = dev_id
         self.url = "http://api-dev.dress-as.com:4460/users/login"
         self.__result = ""
 

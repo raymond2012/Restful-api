@@ -7,20 +7,20 @@ import logging
 from src.Authentication import Authentication
 
 
-class User:
+class User(Authentication):
 
-    def __init__(self):
-        auth = Authentication("test3@gmail.com", "12345677", "12345")
-        auth.login()
-        self.device_id = auth.get_device_id()
-        self.token = auth.get_token()
-        self.id = auth.get_user_id()
+    def __init__(self, email, password, dev_id):
+        Authentication.__init__(email, password, dev_id)
+        self.login()
+        self.__dev_id = self.get_device_id()
+        self.__token = self.get_token()
+        self.__id = self.get_user_id()
         self.base_url = "http://api-dev.dress-as.com:4460/users/"
 
     ###Users###
     def get_user_profile(self):
         logging.debug("Get User Profile")
-        url = self.base_url + self.id + "/profile"
+        url = self.base_url + self.__id + "/profile"
         r = requests.get(url)
         print(r.status_code)
         print(url)
@@ -37,12 +37,12 @@ class User:
 
     def change_password(self, curr, new):
         logging.debug("Change password")
-        headers_get = {'Authorization': "Bearer " + self.token}
+        headers_get = {'Authorization': "Bearer " + self.__token}
         data_get = {
             "curr_password": curr,
             "new_password": new
         }
-        r = requests.post(self.base_url + "/users/" + self.id + "/password", headers=headers_get, data=data_get)
+        r = requests.post(self.base_url + "/users/" + self.__id + "/password", headers=headers_get, data=data_get)
         print(r.status_code)
         if r.status_code == 200:
             logging.debug("Change password Successfully")
@@ -57,8 +57,8 @@ class User:
     def update_user_profile(self, edit_profile):
         logging.debug("Update User Profile")
         data_get = edit_profile
-        header_get = {"Authorization": "Bearer " + self.token}
-        r = requests.patch(self.base_url + self.id + "/profile", headers=header_get, data=data_get)
+        header_get = {"Authorization": "Bearer " + self.__token}
+        r = requests.patch(self.base_url + self.__id + "/profile", headers=header_get, data=data_get)
         if r.status_code == 200:
             print("Update Successful")
         elif r.status_code >= 400:
@@ -69,12 +69,12 @@ class User:
 
     def upload_user_profile_pic(self, name, body):
         logging.debug("upload User Profile Pic")
-        header_get = {"Authorization": "Bearer " + self.token}
+        header_get = {"Authorization": "Bearer " + self.__token}
         data_get = {
             "image_name": name,
             "image_body": body
         }
-        r = requests.post(self.base_url + self.id + "/propic", headers=header_get, data=data_get)
+        r = requests.post(self.base_url + self.__id + "/propic", headers=header_get, data=data_get)
         if r.status_code == 200:
             logging.debug("Upload Successful")
             return
@@ -142,18 +142,20 @@ class User:
             else:
                 print("Unexpected error")
 
-    def print_output(self, time, success, name, task, code):
+    @staticmethod
+    def print_output(time, success, name, task, code):
         if code == 200:
             print("[%s][%s][%s][%s]" % (time, success, task, name))
         else:
             print("[%s][%s][%s][%s] Expected return code is [200], but get [%s]" % (time, success, task, name, code))
+
 
 def main():
     # result = login("test3@gmail.com", "12345677", "12345")
 
     # update_user_profile(id, token, {"firstname": "HO", "lastname": "Raymond"})
     # get_user_profile(id)
-    user = User()
+    user = User("test3@gmail.com", "12345677", "12345")
     user.get_user_profile()
     # follow_user('5116', id, token)
     # unfollow_user('5116', id, token)
@@ -170,5 +172,6 @@ def main():
     # change_password(token, '12345678', '12345677')
     # logout(token)
     # register("test3@gmail.com", "12345678", "12345", "Hong Kong")
+
 
 main()
