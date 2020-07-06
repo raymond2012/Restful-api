@@ -7,15 +7,15 @@ class Authentication:
         self.__email = email
         self.__password = password
         self.__dev_id = dev_id
-        self.url = "http://api-dev.dress-as.com:4460/users/login"
+        self.__base_url = "http://api-dev.dress-as.com:4460/users/login"
         self.__result = ""
 
     def login(self):
         print("Login")
-        data_get = {'device_id': self.__device_id,
+        data_get = {'device_id': self.__dev_id,
                     'email': self.__email,
                     'password': self.__password}
-        r = requests.Session().post(self.url, data=data_get)
+        r = requests.Session().post(self.__base_url, data=data_get)
         if r.content is not None:
             print(r.content)
             self.__result = json.loads(r.content.decode('utf-8'))
@@ -32,13 +32,13 @@ class Authentication:
             print("Unexpected Error")
             return
 
-    def register(self, email, password, device_id, location):
+    def register(self, location):
         print("Register")
-        data_get = {'email': email,
-                    'password': password,
-                    'device_id': device_id,
+        data_get = {'email': self.__email,
+                    'password': self.__password,
+                    'device_id': self.__dev_id,
                     "location": location}
-        r = requests.post(self.base_url + "register", data=data_get)
+        r = requests.post(self.__base_url + "register", data=data_get)
         result = json.loads(r.content.decode('utf-8'))
         print(r.status_code)
         if r.status_code == 200:
@@ -55,8 +55,8 @@ class Authentication:
 
     def logout(self):
         print("Logout")
-        headers_get = {'Authorization': "bearer " + self.token}
-        r = requests.post(self.base_url + "logout", headers=headers_get)
+        headers_get = {'Authorization': "bearer " + self.get_token()}
+        r = requests.post(self.__base_url + "logout", headers=headers_get)
         print(r.status_code)
         result = json.loads(r.content.decode('utf-8'))
         if r.status_code == 200:
@@ -70,8 +70,8 @@ class Authentication:
     def signin_with_google(self, google_token):
         print("Sign-in with Google")
         data_get = {"id_token": google_token,
-                    "device_id": self.__device_id}
-        r = requests.post(self.base_url + "login/google", data=data_get)
+                    "device_id": self.__dev_id}
+        r = requests.post(self.__base_url + "login/google", data=data_get)
         if r.content is not None:
             result = json.loads(r.content.decode('utf-8'))
             if r.status_code == 200:
@@ -87,7 +87,7 @@ class Authentication:
         return self.__result['user_id']
 
     def get_device_id(self):
-        return self.__device_id
+        return self.__dev_id
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")

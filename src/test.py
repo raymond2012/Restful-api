@@ -1,3 +1,5 @@
+import base64
+
 import requests
 import json
 import pytest
@@ -13,9 +15,9 @@ temp = {
 
 
 def test():
-    url = "/snaps?"
-    return urllib.pars
-    e.urlencode(temp)
+    with open(r"C:\Users\user\Downloads\768px-Python-logo-notext.svg.png", "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+        print(encoded_string)
 
 
 print(test())
