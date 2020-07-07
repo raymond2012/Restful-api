@@ -1,23 +1,11 @@
-import base64
-
-import requests
-import json
 import pytest
-import datetime
-import logging
-import urllib
 
-temp = {
-    "filter": "filter-v",
-    "offset": "offset-v",
-    "offset_id": "offset_id-v"
-}
+from src.User import User
 
+def test_get_user_profile():
+    result = User("test3@gmail.com", "12345677", "12345").get_user_profile()
+    assert result == 200
 
-def test():
-    with open(r"C:\Users\user\Downloads\768px-Python-logo-notext.svg.png", "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-        print(encoded_string)
-
-
-print(test())
+def test_change_password():
+    result = User("test3@gmail.com", "12345677", "12345").change_password("12345677", "12345678")
+    assert result == 201
