@@ -1,11 +1,8 @@
 import requests
 
-from src.Authentication import Authentication
 
-
-class Miscellaneous(Authentication):
-    def __init__(self, email="", password="", dev_id=""):
-        super().__init__(email, password, dev_id)
+class Miscellaneous:
+    def __init__(self):
         self.base_url = "http://api-dev.dress-as.com:4460"
 
     def get_privacy_policy(self):

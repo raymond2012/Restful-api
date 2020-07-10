@@ -1,5 +1,3 @@
-import sys
-
 import requests
 import json
 
@@ -14,7 +12,7 @@ class Authentication:
         self.__id = ""
 
     def login(self):
-        print("Login")
+        # print("Login")
         data_get = {'device_id': self.__dev_id,
                     'email': self.__email,
                     'password': self.__password}
@@ -24,26 +22,30 @@ class Authentication:
             result = json.loads(r.content.decode('utf-8'))
             self.__token = result['token']
             self.__id = result['user_id']
+        return r
 
     def register(self, location):
-        print("Register")
+        # print("Register")
         data_get = {'email': self.__email,
                     'password': self.__password,
                     'device_id': self.__dev_id,
                     "location": location}
         r = requests.post(self.__auth_url + "/register", data=data_get)
         self.print_result("register", r.status_code, r.content)
+        return r
 
     def logout(self):
-        print("Logout")
+        # print("Logout")
         headers_get = {'Authorization': "bearer " + self.get_token()}
         r = requests.post(self.__auth_url + "logout", headers=headers_get)
         if r.status_code == 200:
-            self.__token, self.__id = None
+            self.__token = None
+            self.__id = None
         self.print_result("logout", r.status_code, r.content)
+        return r
 
     def signin_with_google(self, google_token):
-        print("Sign-in with Google")
+        # print("Sign-in with Google")
         data_get = {"id_token": google_token,
                     "device_id": self.__dev_id}
         r = requests.post(self.__auth_url + "login/google", data=data_get)
