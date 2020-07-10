@@ -419,7 +419,12 @@
 
 - Method: **GET**
 
-- URL: ```/snaps/{id}/products```
+- URL: ```/snaps/{id}/products?offset={offset}&offset_id={offset_id}&limit={limit}```
+
+- Description:
+    All query params are options
+    offset_id = get products with snap_product_id less than offset_id
+    limit = max. number of result items
 
 - Header: (optional)Authorization: "Bearer {token}"
 
@@ -643,9 +648,9 @@
 
 ##### 2.11 Get snap info after login
 
-- Method: **POST**
+- Method: **GET**
 
-- URL: ```/snaps/{snap_id}/info-after-login```
+- URL: ```/snaps/info-after-login?home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}```
 
 - Header: Authorization: "Bearer {token}"
 
@@ -654,13 +659,53 @@
     ```json
     {
         "snap_id": 7621,
+        "user_id": 3,
         "is_favourite": false,
         "is_following": false
     },
     {
         "snap_id": 7620,
+        "user_id": 3,
         "is_favourite": false,
         "is_following": false
+    }
+    ```
+
+##### 2.12 Remove a snap product
+
+
+- Method: **DELETE**
+
+- URL: ```/snaps/product/{id}```
+
+- Header: Authorization: "Bearer {token}"
+
+- Response:
+
+    **204**
+
+
+    **400**
+
+    ```json
+    {
+        "error": "please specify snap product id"
+    }
+    ```
+
+    **401**
+
+    ```json
+    {
+        "error": "please login"
+    }
+    ```
+
+    **500**
+
+    ```json
+    {
+        "error": "cannot remove snap product"
     }
     ```
 
@@ -720,8 +765,10 @@
 
     ```json
     {
-        "curr_password": "current",
-        "new_password": "new"
+        "curr_password": "current password",
+        "new_password": "new password",
+        "device_id": "string",
+        "expire_all_tokens: true / false (optional)
     }
     ```
 
@@ -769,7 +816,7 @@
 
 - Header: Authorization: "Bearer {token}"
 
-- Body: 
+- Body:
 
     ```json
     {
@@ -778,7 +825,7 @@
         (optional)"username": "John Doe",
         (optional)"bio": "Hi",
         (optional)"tagline": "string",
-        (optional)"location": "string",
+        (optional)"location": "location code",
         (optional)"instagram_url": "url",
         (optional)"facebook_url": "url",
         (optional)"twitter_url": "url",
@@ -1249,7 +1296,12 @@
 
 - Method: **GET**
 
-- URL: ```/users/{id}/favourite/product```
+- URL: ```/users/{id}/favourite/product?offset={offset}&offset_id={offset_id}&limit={limit}```
+
+- Description:
+    All query params are options
+    offset_id = get products with snap_product_id favorite time less than favorite time of offset_id
+    limit = max. number of result items
 
 - Header: Authorization: "Bearer {token}"
 
