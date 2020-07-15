@@ -6,14 +6,14 @@ class Authentication:
     def __init__(self, email, password, dev_id):
         self.__email = email
         self.__password = password
-        self.__dev_id = dev_id
+        self.get_device_id = dev_id
         self.__auth_url = "http://api-dev.dress-as.com:4460/users/"
         self.__token = ""
         self.__id = ""
 
     def login(self):
         # print("Login")
-        data_get = {'device_id': self.__dev_id,
+        data_get = {'device_id': self.get_device_id,
                     'email': self.__email,
                     'password': self.__password}
         r = requests.Session().post(self.__auth_url + "/login", data=data_get)
@@ -28,7 +28,7 @@ class Authentication:
         # print("Register")
         data_get = {'email': self.__email,
                     'password': self.__password,
-                    'device_id': self.__dev_id,
+                    'device_id': self.get_device_id,
                     "location": location}
         r = requests.post(self.__auth_url + "/register", data=data_get)
         self.print_result("register", r.status_code, r.content)
@@ -39,29 +39,31 @@ class Authentication:
         headers_get = {'Authorization': "bearer " + self.get_token()}
         r = requests.post(self.__auth_url + "logout", headers=headers_get)
         if r.status_code == 200:
-            self.__token = None
-            self.__id = None
+            self.get_token = None
         self.print_result("logout", r.status_code, r.content)
         return r
 
     def signin_with_google(self, google_token):
         # print("Sign-in with Google")
         data_get = {"id_token": google_token,
-                    "device_id": self.__dev_id}
+                    "device_id": self.get_device_id}
         r = requests.post(self.__auth_url + "login/google", data=data_get)
         self.print_result("signin_with_google", r.status_code, r.content)
 
     def get_token(self):
-        return str(self.__token)
+        if self.__token is not None:
+            return str(self.__token)
 
     def get_header_auth(self):
-        return {"Authorization": "Bearer " + self.__token}
+        if self.__token is not None:
+            return {"Authorization": "Bearer " + self.__token}
 
     def get_user_id(self):
-        return str(self.__id)
+        if self.__id is not None:
+            return str(self.__id)
 
     def get_device_id(self):
-        return self.__dev_id
+        return self.get_device_id
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")
