@@ -27,7 +27,7 @@ class User(Snap):
 
     ###Users###
     @check_token
-    def get_user_profile(self):
+    def get_user(self):
         # print("Get User Profile")
         r = requests.get(self.user_url + self.get_user_id() + "/profile")
         self.print_result("get_user_profile", r.status_code, r.content)
@@ -38,7 +38,8 @@ class User(Snap):
         # print("Change password")
         data_get = {
             "curr_password": curr,
-            "new_password": new
+            "new_password": new,
+            "device_id": self.get_device_id()
         }
         r = requests.post(self.user_url + self.get_user_id() + "/password", headers=self.get_header_auth(),
                           data=data_get)
@@ -46,7 +47,7 @@ class User(Snap):
         return r
 
     @check_token
-    def update_user_profile(self, edit_profile):
+    def update_user(self, edit_profile):
         # print("Update User Profile")
         r = requests.patch(self.user_url + self.get_user_id() + "/profile", headers=self.get_header_auth(), data=edit_profile)
         self.print_result("update_user_profile", r.status_code, r.content)
@@ -64,10 +65,15 @@ class User(Snap):
         return r
 
     @check_token
-    def delete_user_profile_pic(self):
+    def remove_user_profile_pic(self):
         # print("Delete User Profile Pic")
         r = requests.delete(self.user_url + self.get_user_id() + "/propic", headers=self.get_header_auth())
         self.print_result("delete_user_profile_pic", r.status_code, r.content)
+        return r
+
+    def count_user_follower_and_following(self):
+        r = requests.get(self.user_url + self.get_user_id() + "/follow/count")
+        self.print_result("count_user_follower_and_following", r.status_code, r.content)
         return r
 
     @check_token
@@ -105,13 +111,7 @@ class User(Snap):
             print("The type of param_dict is not a dictionary")
         return r
 
-    def get_favourite_products(self):
-        # print("Get Favourite Products")
-        r = requests.get(self.user_url + self.get_user_id() + "/favourite/product", headers=self.get_header_auth())
-        self.print_result("get_favourite_products", r.status_code, r.content)
-        return r
-
-    def add_snap_product_to_favourite(self, snap_id):
+    def add_snap_to_favourite(self, snap_id):
         # print("Add a Snap to Favourite")
         r = requests.post(self.user_url + self.get_user_id() + "/favourite/snap/" + snap_id, headers=self.get_header_auth())
         self.print_result("add_snap_product_to_favourite", r.status_code, r.content)
@@ -127,13 +127,13 @@ class User(Snap):
     def get_favourite_products(self, param_dict):
         # print("Get Favourite Products")
         if type(param_dict) is dict:
-            r = requests.delete(self.user_url + self.get_user_id() + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
+            r = requests.get(self.user_url + self.get_user_id() + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
             self.print_result("get_favourite_products", r.status_code, r.content)
         else:
             print("The type of param_dict is not a dictionary")
         return r
 
-    def add_snap_product_to_favourite(self, prod_id):
+    def add_snap_to_favourite(self, prod_id):
         # print("Add a Product to Favourite")
         r = requests.post(self.user_url + self.get_user_id() + "/favourite/product/" + prod_id, headers=self.get_header_auth())
         self.print_result("add_snap_product_to_favourite", r.status_code, r.content)
@@ -145,10 +145,10 @@ class User(Snap):
         self.print_result("remove_snap_product_to_favourite", r.status_code, r.content)
         return r
 
-    def get_user_snap(self, param_dict):
+    def get_user_snap_of_a_user(self, user_id, param_dict):
         # print("Get Snaps of a user")
         if type(param_dict) is dict:
-            r = requests.get(self.user_url + self.get_user_id() + "snap?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
+            r = requests.get(self.user_url + user_id + "snap?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
             self.print_result("get_user_snap", r.status_code, r.content)
         else:
             print("The type of param_dict is not a dictionary")
@@ -178,29 +178,24 @@ class User(Snap):
         self.print_result("report_user", r.status_code, r.content)
         return r
 
-    def check_user_exist(self, username):
+    def check_user_valid(self, username):
         # print("Check User Exist or not")
-        r = requests.post(self.user_url + "/username-exists/" + username, headers=self.get_header_auth())
-        self.print_result("check_user_exist", r.status_code, r.content)
+        r = requests.get(self.user_url + "username-valid/" + username, headers=self.get_header_auth())
+        self.print_result("check_user_valid", r.status_code, r.content)
         return r
 
-    def get_following_user_snap(self, user_id):
-        # print("Get Following User Snap")
-        r = requests.get(self.user_url + user_id + "/following/snaps", headers=self.get_header_auth())
-        # print(r.content.decode('utf-8'))
-        self.print_result("check_user_exist", r.status_code, r.content)
+    def get_following_users_snaps(self):
+        r = requests.get(self.user_url + "following/snaps", headers=self.get_header_auth())
+        self.print_result("get_following_users_snaps", r.status_code, r.content)
         return r
-
-    @staticmethod
-    def print_output(time, success, name, task, code):
-        if code == 200:
-            print("[%s][%s][%s][%s]" % (time, success, task, name))
-        else:
-            print("[%s][%s][%s][%s] Expected return code is [200], but get [%s]" % (time, success, task, name, code))
-
 
 def main():
-    # user = User("test4@gmail.com", "12345678", "12234")
+    user = User("test3@gmail.com", "12345677", "12234")
+    user.login()
+    user.count_user_follower_and_following('5118')
+    # user.get_following_users_snaps()
+    # user.get_following()
+    # user.get_following_user_snap('5117')
     # user.get_user_profile()
     # user.get_follower()
     # user.get_following()

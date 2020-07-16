@@ -6,7 +6,7 @@ class Authentication:
     def __init__(self, email, password, dev_id):
         self.__email = email
         self.__password = password
-        self.get_device_id = dev_id
+        self.__get_device_id = dev_id
         self.__auth_url = "http://api-dev.dress-as.com:4460/users/"
         self.__token = ""
         self.__id = ""
@@ -58,12 +58,17 @@ class Authentication:
         if self.__token is not None:
             return {"Authorization": "Bearer " + self.__token}
 
+    def get_header_auth_json(self):
+        if self.__token is not None:
+            return {"Authorization": "Bearer " + self.__token, "Content-Type": "application/json"}
+
     def get_user_id(self):
         if self.__id is not None:
             return str(self.__id)
 
     def get_device_id(self):
-        return self.get_device_id
+        if self.__id is not None:
+            return str(self.__get_device_id)
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")
@@ -85,7 +90,7 @@ class Authentication:
                     print("Function: %s, Status Code: %s, Result: Successful" % (fun_name, str(status_code)))
             elif status_code >= 400:
                 if result is not None:
-                    print("Function: %s, Status Code: %s, Error: %s" % (fun_name, str(status_code), result))
+                    print("Function: %s, Status Code: %s, Error : %s" % (fun_name, str(status_code), result))
                 else:
                     print("Function: %s, Status Code: %s, Error: No error Message" % (fun_name, str(status_code)))
             else:
