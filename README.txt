@@ -6,6 +6,76 @@
 
 - DEV API Domain (NEW): [Contact support for the domain]:4460
 
+##### General Error Code
+
+- General error will be occurred when server encounter internal errors (e.g. query error, syntax error, etc.)
+
+- For get records apis:
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "GET_FAIL",
+            "message": "Get {{object}} failed"
+        }
+    }
+    ```
+
+- For create records apis (e.g. create snaps, create user):
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "CREATE_FAIL",
+            "message": "Create {{object}} failed"
+        }
+    }
+    ```
+
+- For update records apis (e.g. edit profile):
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "UPDATE_FAIL",
+            "message": "Update {{object}} failed"
+        }
+    }
+    ```
+
+- For upload image apis (e.g. create snaps, update profile pic):
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "UPLOAD_FAIL",
+            "message": "Upload {{object}} failed"
+        }
+    }
+    ```
+
+- For remove records apis (e.g. delete snap, delete snap product):
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "REMOVE_FAIL",
+            "message": "Remove {{object}} failed"
+        }
+    }
+    ```
+
+- For add linkage apis (e.g. add favorite snap, add follower, add favorite product):
+    **500**
+    ```json
+    {
+        "error": {
+            "code": "ADD_FAIL",
+            "message": "Add {{object}} failed"
+        }
+    }
+    ```
+
 #### 1. Authentication
 
 ##### 1.1 Login
@@ -42,15 +112,32 @@
 
     ```json
     {
-        "error": "please provide email and password"
+        "error": {
+            "code": "MISSING_{{PARAM}}",
+            "message": "Please provide {{PARAM}}"
+        }
     }
     ```
 
-    **403**
+    **400**
 
     ```json
     {
-        "error": "incorrect email or password"
+        "error": {
+            "code": "INVALID_{{PARAM}}",
+            "message": "Invalid {{PARAM}}"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
     }
     ```
 
@@ -76,7 +163,7 @@
 
 ##### 1.3 Register
 
-- Description: Register a new account with email, password and device id. 
+- Description: Register a new account with email, password and device id.
 
 - Method: **POST**
 
@@ -109,7 +196,10 @@
 
     ```json
     {
-        "error": "invalid email"
+        "error": {
+            "code": "MISSING_PARAM",
+            "message": "Please provide PARAM"
+        }
     }
     ```
 
@@ -117,15 +207,10 @@
 
     ```json
     {
-        "error": "email exists"
-    }
-    ```
-
-    **403**
-
-    ```json
-    {
-        "error": "cannot register"
+        "error": {
+            "code": "INVALID_PARAM",
+            "message": "Invalid PARAM"
+        }
     }
     ```
 
@@ -133,16 +218,12 @@
 
     ```json
     {
-        "error": "please provide email and password"
+        "error": {
+            "code": "EXIST_ALREADY",
+            "message": "email exist already"
+        }
     }
     ```
-
-    **400**
-
-    ```json
-    {
-        "error": "password too short"
-    }
 
 ##### 1.4 Signin with Google
 
@@ -169,7 +250,10 @@
 
     ```json
     {
-        "error": "please provide device id and google email and profile id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please provide device id and google email and profile id"
+        }
     }
     ```
 
@@ -275,7 +359,10 @@
 
     ```json
     {
-        "error": "please specify snap id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify snap id"
+        }
     }
     ```
 
@@ -283,7 +370,10 @@
 
     ```json
     {
-        "error": "no such snap"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
     }
     ```
 
@@ -299,7 +389,7 @@
 
     ```json
     {
-        "snaps": 
+        "snaps":
             [
                 {
                     "title": "title1",
@@ -349,7 +439,21 @@
 
     ```json
     {
-        "error": "please provide request body"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify params"
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "IMAGE_SIZE_OVER_LIMIT",
+            "message": "Image size must not be greater than 5mb"
+        }
     }
     ```
 
@@ -357,7 +461,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -379,7 +486,10 @@
 
     ```json
     {
-        "error": "please specify snap id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify snap id"
+        }
     }
     ```
 
@@ -387,7 +497,10 @@
 
     ```json
     {
-        "error": "no such snap"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
     }
     ```
 
@@ -395,23 +508,10 @@
 
     ```json
     {
-        "error": "please login"
-    }
-    ```
-
-    **401**
-
-    ```json
-    {
-        "error": "unauthorized"
-    }
-    ```
-
-    **500**
-
-    ```json
-    {
-        "error": "cannot remove snap/snap image"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -459,15 +559,21 @@
 
     ```json
     {
-        "error": "please specify snap id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify snap id"
+        }
     }
     ```
 
-    **500**
+    **404**
 
     ```json
     {
-        "error": "cannot get snap gcs product"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
     }
     ```
 
@@ -557,24 +663,30 @@
     **200**
 
     ```json
-    [
-        {
-            "post_id": 130,
-            "name": "testuser3",
-            "timestamp": 1593069800,
-            "user_id": 3,
-            "status": "A",
-            "message": "comment20200312",
-            "user_propic": "https://d11gzdcabvug5x.cloudfront.net/detailed/8/4315_1590151469727_lrte-aq5.png"
-        }
-    ]
+    {
+        "comments": [
+            {
+                "post_id": 130,
+                "name": "testuser3",
+                "timestamp": 1593069800,
+                "user_id": 3,
+                "status": "A",
+                "message": "comment20200312",
+                "user_propic": "https://d11gzdcabvug5x.cloudfront.net/detailed/8/4315_1590151469727_lrte-aq5.png"
+            }
+        ],
+        "n_comment": 1
+    }
     ```
 
     **400**
 
     ```json
     {
-        "error": "please specify snap id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify snap id"
+        }
     }
     ```
 
@@ -602,15 +714,10 @@
 
     ```json
     {
-        "error": "please provide request body"
-    }
-    ```
-
-    **401**
-
-    ```json
-    {
-        "error": "please login"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify params"
+        }
     }
     ```
 
@@ -618,15 +725,10 @@
 
     ```json
     {
-        "error": "no such snap"
-    }
-    ```
-
-    **500**
-
-    ```json
-    {
-        "error": "cannot create comment"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
     }
     ```
 
@@ -634,15 +736,31 @@
 
 - Method: **POST**
 
-- URL: ```/gcsproducts/{gcs_productid}/click```
+- URL: ```/snapproducts/click```
 
 - Body:
 
     ```json
     {
-        "snap_id": "snap id",
+        "snap_product_id": "snap product id",
+        "platform_product_id": "plaform product id",
         "url": "the url being clicked",
         "ip": "ip address"
+    }
+    ```
+
+- Response:
+
+    **201**
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify params"
+        }
     }
     ```
 
@@ -650,24 +768,19 @@
 
 - Method: **GET**
 
-- URL: ```/snaps/info-after-login?home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}```
+- URL: ```/snaps/info-after-login?home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},filter:{editorpick}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}&product=snap_id:{snap_id}```
 
 - Header: Authorization: "Bearer {token}"
 
-- Body:
+- Response:
+
+    **200**
 
     ```json
     {
-        "snap_id": 7621,
-        "user_id": 3,
-        "is_favourite": false,
-        "is_following": false
-    },
-    {
-        "snap_id": 7620,
-        "user_id": 3,
-        "is_favourite": false,
-        "is_following": false
+        "fav_snap_ids": [7623, 7576, 7522, 7521],
+        "fav_snap_product_ids": [45, 46, 47, 48],
+        "follow_user_ids": [5114]
     }
     ```
 
@@ -689,7 +802,10 @@
 
     ```json
     {
-        "error": "please specify snap product id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "please specify product id"
+        }
     }
     ```
 
@@ -697,15 +813,67 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
-    **500**
+##### 2.13 Get snaps by snap product id
+
+- Method: **GET**
+
+- URL: ```/snaps/product/{snap_product_id}/relatedsnaps?offset={offset}&offset_id={offset_id}&limit={limit}&order={ASC|DESC}&orderby={creation|popularity}```
+
+- Description:
+    All query params are options
+    order by creation = order by snap id
+    order by popularity = order by number of click
+    offset_id = get snaps with snap_id less than offset_id
+    limit = max. number of result items
+
+- Header: Authorization: "Bearer {token}"
+
+- Body:
+
+    ```json
+    [
+        {
+            "snap_id": 7558,
+            "user_id": 3,
+            "is_editor_pick": false,
+            "product_id": 6853,
+            "image_path": "https://d11gzdcabvug5x.cloudfront.net/detailed/8/test_image_1593151996_uRliZ.jpeg",
+            "image_id": 8447,
+            "image_x": 1080,
+            "image_y": 1347,
+            "creator_propic": "https://d11gzdcabvug5x.cloudfront.net/detailed/0/cat.jpg",
+            "username": "hello",
+            "allow_product_search": "Y",
+            "has_products": "Y",
+            "n_follower": 0,
+            "n_favourite": 0,
+            "n_comment": 0,
+            "is_favourite": false,
+            "is_following": false,
+            "thumbnail_path": "https://d11gzdcabvug5x.cloudfront.net/thumbnails/938/1170/detailed/8/test_image_1593151996_uRliZ.jpeg"
+        }
+    ]
+    ```
+
+- Response:
+
+    **200**
+
+    **400**
 
     ```json
     {
-        "error": "cannot remove snap product"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify params"
+        }
     }
     ```
 
@@ -749,7 +917,10 @@
 
     ```json
     {
-        "error": "please specify user id"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "please specify user id"
+        }
     }
     ```
 
@@ -780,7 +951,10 @@
 
     ```json
     {
-        "error": "please provide request body"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify request body"
+        }
     }
     ```
 
@@ -788,23 +962,21 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
-    **401**
+    **400**
 
     ```json
     {
-        "error": "unauthorized"
-    }
-    ```
-
-    **500**
-
-    ```json
-    {
-        "error": "cannot change password"
+        "error": {
+            "code": "INVALID_{{PARAM}}",
+            "message": "Invalid {{PARAM}}"
+        }
     }
     ```
 
@@ -843,15 +1015,10 @@
 
     ```json
     {
-        "error": "please provide request body"
-    }
-    ```
-
-    **401**
-
-    ```json
-    {
-        "error": "please login"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify request body"
+        }
     }
     ```
 
@@ -859,7 +1026,43 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "INVALID_{{PARAM}}",
+            "message": "Invalid {{PARAM}}"
+        }
+    }
+    ```
+
+    **401**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "EXIST_ALREADY",
+            "message": "Username existed already"
+        }
     }
     ```
 
@@ -867,7 +1070,10 @@
 
     ```json
     {
-        "error": "cannot edit"
+        "error": {
+            "code": "UPDATE_FAIL",
+            "message": "Update social media failed"
+        }
     }
     ```
 
@@ -896,7 +1102,21 @@
 
     ```json
     {
-        "error": "please provide request body"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify request body"
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "IMAGE_SIZE_OVER_LIMIT",
+            "message": "Image size must not be greater than 5mb"
+        }
     }
     ```
 
@@ -904,23 +1124,10 @@
 
     ```json
     {
-        "error": "please login"
-    }
-    ```
-
-    **401**
-
-    ```json
-    {
-        "error": "unauthorized"
-    }
-    ```
-
-    **500**
-
-    ```json
-    {
-        "error": "cannot upload pro pic"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -940,15 +1147,21 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1050,7 +1263,10 @@
 
     ```json
     {
-        "error": "please specify id(s)"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "please specify id(s)"
+        }
     }
     ```
 
@@ -1058,7 +1274,10 @@
 
     ```json
     {
-        "error": "user id and blogger id cannot be same"
+        "error": {
+            "code": "SAME_FAIL",
+            "message": "user id and blogger id cannot be same"
+        }
     }
     ```
 
@@ -1066,7 +1285,10 @@
 
     ```json
     {
-        "error": "followed already"
+        "error": {
+            "code": "ADD_ALREADY",
+            "message": "Added follow already"
+        }
     }
     ```
 
@@ -1074,7 +1296,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1082,7 +1307,10 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1090,7 +1318,10 @@
 
     ```json
     {
-        "error": "cannot follow"
+        "error": {
+            "code": "ADD_FAIL",
+            "message": "Add follow failed"
+        }
     }
     ```
 
@@ -1110,7 +1341,10 @@
 
     ```json
     {
-        "error": "please specify id(s)"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "please specify id(s)"
+        }
     }
     ```
 
@@ -1118,7 +1352,10 @@
 
     ```json
     {
-        "error": "user id and blogger id cannot be same"
+        "error": {
+            "code": "SAME_FAIL",
+            "message": "user id and blogger id cannot be same"
+        }
     }
     ```
 
@@ -1126,7 +1363,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1134,7 +1374,10 @@
 
     ```json
     {
-        "error": "Unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1142,7 +1385,10 @@
 
     ```json
     {
-        "error": "cannot unfollow"
+        "error": {
+            "code": "REMOVE_FAIL",
+            "message": "Remove follow failed"
+        }
     }
     ```
 
@@ -1192,7 +1438,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1200,7 +1449,10 @@
 
     ```json
     {
-        "error": "Unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1220,7 +1472,10 @@
 
     ```json
     {
-        "error": "added already"
+        "error": {
+            "code": "ADD_ALREADY",
+            "message": "Added favorite snap already"
+        }
     }
     ```
 
@@ -1228,7 +1483,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1236,7 +1494,10 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1264,7 +1525,10 @@
 
     ```json
     {
-        "error": "no record found"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Favorite snap not found"
+        }
     }
     ```
 
@@ -1272,7 +1536,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1280,7 +1547,10 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1288,7 +1558,10 @@
 
     ```json
     {
-        "error": "cannot remove snap favourite"
+        "error": {
+            "code": "REMOVE_FAIL",
+            "message": "Remove favorite snap failed"
+        }
     }
     ```
 
@@ -1362,7 +1635,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1370,7 +1646,10 @@
 
     ```json
     {
-        "error": "Unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1390,7 +1669,10 @@
 
     ```json
     {
-        "error": "added already"
+        "error": {
+            "code": "ADD_ALREADY",
+            "message": "Added favorite product already"
+        }
     }
     ```
 
@@ -1398,7 +1680,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1406,7 +1691,10 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1414,7 +1702,10 @@
 
     ```json
     {
-        "error": "cannot add snap product to favourite"
+        "error": {
+            "code": "ADD_FAIL",
+            "message": "Add favorite product failed"
+        }
     }
     ```
 
@@ -1434,7 +1725,10 @@
 
     ```json
     {
-        "error": "no record found"
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Favorite product not found"
+        }
     }
     ```
 
@@ -1442,7 +1736,10 @@
 
     ```json
     {
-        "error": "please login"
+        "error": {
+            "code": "NOT_LOGIN",
+            "message": "Please login first"
+        }
     }
     ```
 
@@ -1450,7 +1747,10 @@
 
     ```json
     {
-        "error": "unauthorized"
+        "error": {
+            "code": "UNAUTHORIZED",
+            "message": "unauthorized"
+        }
     }
     ```
 
@@ -1458,7 +1758,10 @@
 
     ```json
     {
-        "error": "cannot remove snap product favourite"
+        "error": {
+            "code": "REMOVE_FAIL",
+            "message": "Remove favorite product failed"
+        }
     }
     ```
 
@@ -1571,7 +1874,10 @@
 
     ```json
     {
-        "error": "please provide email"
+        "error": {
+            "code": "MISSING_PARAMS",
+            "message": "Please specify email"
+        }
     }
     ```
 
@@ -1584,7 +1890,8 @@
 - Response:
 
     **200**
-    ```
+
+    ```json
     {
         "likes": "integer",
     }
@@ -1609,18 +1916,18 @@
 - Response:
     **201**
 
-
-##### 3.22 Check username exist or not
+##### 3.22 Check username valid or not
 
 - Method: **GET**
 
-- URL: ```/users/username-exists/{username}```
+- URL: ```/users/username-valid/{username}```
 
 - Header: (optional)Authorization: "Bearer {token}"
 
 - Response:
 
     **200**
+
     ```json
     {
         "result": "boolean"
@@ -1631,13 +1938,14 @@
 
 - Method: **GET**
 
-- URL: ```/users/{userid}/following/snaps```
+- URL: ```/users/following/snaps```
 
 - Header: (optional)Authorization: "Bearer {token}"
 
 - Response:
 
     **200**
+
     ```json
     [
         {
