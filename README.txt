@@ -2033,7 +2033,7 @@
 
     ```json
     {
-        "background": {
+            "background": {
             "left": "image url",
             "right": "image url"
         }

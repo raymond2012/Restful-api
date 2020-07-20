@@ -31,9 +31,8 @@ class Snap(Authentication):
             url_param = urllib.parse.urlencode(param_dict)
             r = requests.get(self.snaps_url + "?" + url_param, headers=self.get_header_auth())
             # self.print_result("get_snaps", r.status_code, r.content)
-            result = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            print(result)
-            return result
+            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+            return {"response": r, "list": result_list}
 
     def get_single_snap(self, snap_id):
         # print("Get Single Snap")
@@ -57,17 +56,16 @@ class Snap(Authentication):
         self.print_result("remove_snap", r.status_code, r.content)
         return r
 
-    def get_products_of_a_snap(self, id, query_dict):
+    def get_products_of_a_snap(self, snap_id, query_dict={}):
         # print("Get Products of a snap")
         # URL: ```/snaps/{id}/products?offset={offset}&offset_id={offset_id}&limit={limit}```
-        url = self.snaps_url + "/" + id + "/products" + "?" + urllib.parse.urlencode(query_dict)
+        url = self.snaps_url + "/" + snap_id + "/products?" + urllib.parse.urlencode(query_dict)
         print(url)
-        if query_dict is dict:
-            r = requests.get(
-                self.snaps_url + "/" + id + "/products" + "?" + urllib.parse.urlencode(query_dict),
-                headers=self.get_header_auth())
+        if type(query_dict) is dict:
+            r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_products", r.status_code, r.content)
-            return r
+            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))['products']))
+            return {"response": r, "list": result_list}
 
     def search_snaps(self, query_dict):
         # print("Search Snaps")
@@ -77,20 +75,18 @@ class Snap(Authentication):
             print(url)
             r = requests.get(url, headers=self.get_header_auth())
             # self.print_result("search_snaps", r.status_code, r.content)
-            result = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            print(result)
-            return result
+            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+            return {"response": r, "list": result_list}
 
-
-    def get_snap_comment(self, snap_id, query_dict):
+    def get_snap_comment(self, snap_id, query_dict={}):
         # print("Get Commment of a Snap")
         # URL: ```/snaps/{id}/comment?offset={offset}&offset_id={offset_id}&limit={limit}```
         url = self.snaps_url + "/" + snap_id + "/comment?" + urllib.parse.urlencode(query_dict)
         print(url)
-        r = requests.get(url,
-                         headers=self.get_header_auth())
+        r = requests.get(url, headers=self.get_header_auth())
         self.print_result("get_snap_comment", r.status_code, r.content)
-        return r
+        result_json = json.loads(r.content.decode('utf-8'))
+        return {"response": r, "json": result_json}
 
     def post_comment(self, snap_id,  message):
         # print("Post a Comment")
@@ -100,25 +96,34 @@ class Snap(Authentication):
         self.print_result("post_comment", r.status_code, r.content)
         return r
 
-    def collect_product_link_click(self, gcs_id, body_dict):
+    def collect_product_link_click(self, body_dict):
         # print("Collect Product Link Click Info")
         if type(body_dict) is dict:
-            r = requests.post(self.gcs_products_url + gcs_id + "/click", headers=self.get_header_auth(), data=body_dict)
+            r = requests.post(self.gcs_products_url + "/click", headers=self.get_header_auth(), data=body_dict)
             self.print_result("collect_product_link_click", r.status_code, r.content)
+            return r
+
+    def get_snap_info_after_login_home(self, query_dict):
+        # URL: /snaps/info-after-login?home=snap_id:{snap_id}&order:{DESC|ASC}&orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}
+        if type(query_dict) is dict:
+            url = self.snaps_url + "/info-after-login?home" + urllib.parse.urlencode(query_dict)
+            print(url)
+            r = requests.get(url, headers=self.get_header_auth())
+            self.print_result("get_snap_info_after_login", r.status_code, r.content)
             return r
 
     def get_snap_info_after_login(self, query_dict):
         # URL: /snaps/info-after-login?
         # home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}
         if type(query_dict) is dict:
-            url = self.snaps_url + "/info-after-login?" + urllib.parse.urlencode(query_dict)
+            url = self.snaps_url + "/info-after-login?home" + urllib.parse.urlencode(query_dict)
             print(url)
             r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_info_after_login", r.status_code, r.content)
             return r
 
-    def remove_a_snap_product(self):
-        r = requests.delete(self.snaps_url + "/product/" + self.get_user_id(), headers=self.get_header_auth())
+    def remove_a_snap_product(self, product_id):
+        r = requests.delete(self.snaps_url + "/product/" + product_id, headers=self.get_header_auth())
         self.print_result("remove_a_snap_product", r.status_code, r.content)
         return r
 
