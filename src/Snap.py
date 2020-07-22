@@ -1,7 +1,9 @@
 import base64
+import glob
 import imghdr
 import json
 import urllib
+
 import requests
 
 from src.Authentication import Authentication
@@ -40,19 +42,19 @@ class Snap(Authentication):
         self.print_result("get_single_snap", r.status_code, r.content)
         return r
 
-    @check_token
     def create_snaps(self, query_dict):
         # print("Create Snaps")
         data_get = {
-            "snaps": [query_dict]
+            "snaps": query_dict
         }
+        print(self.get_header_auth_json())
         r = requests.post(self.snaps_url, headers=self.get_header_auth_json(), data=json.dumps(data_get))
         self.print_result("create_snaps", r.status_code, r.content)
         return r
 
-    def remove_snap(self, id):
+    def remove_snap(self, snap_id):
         # print("Remove a snap")
-        r = requests.delete(self.snaps_url + "/" + id, headers=self.get_header_auth())
+        r = requests.delete(self.snaps_url + "/" + snap_id, headers=self.get_header_auth())
         self.print_result("remove_snap", r.status_code, r.content)
         return r
 
@@ -64,8 +66,12 @@ class Snap(Authentication):
         if type(query_dict) is dict:
             r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_products", r.status_code, r.content)
-            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))['products']))
-            return {"response": r, "list": result_list}
+            if r.status_code == 200:
+                result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))['products']))
+                result_list_snap_product_id = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))['products']))
+                return {"response": r, "list_snap_id": result_list_snap_id, "list_product_id": result_list_snap_product_id}
+            else:
+                return {"response": r, "list_snap_id": "", "list_product_id": ""}
 
     def search_snaps(self, query_dict):
         # print("Search Snaps")
@@ -75,8 +81,11 @@ class Snap(Authentication):
             print(url)
             r = requests.get(url, headers=self.get_header_auth())
             # self.print_result("search_snaps", r.status_code, r.content)
-            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list": result_list}
+            if r.status_code == 200:
+                result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "list_snap_id": result_list_snap_id}
+            else:
+                return {"response": r, "list_snap_id": ""}
 
     def get_snap_comment(self, snap_id, query_dict={}):
         # print("Get Commment of a Snap")
@@ -103,31 +112,22 @@ class Snap(Authentication):
             self.print_result("collect_product_link_click", r.status_code, r.content)
             return r
 
-    def get_snap_info_after_login_home(self, query_dict):
-        # URL: /snaps/info-after-login?home=snap_id:{snap_id}&order:{DESC|ASC}&orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}
-        if type(query_dict) is dict:
-            url = self.snaps_url + "/info-after-login?home" + urllib.parse.urlencode(query_dict)
-            print(url)
-            r = requests.get(url, headers=self.get_header_auth())
-            self.print_result("get_snap_info_after_login", r.status_code, r.content)
-            return r
-
     def get_snap_info_after_login(self, query_dict):
         # URL: /snaps/info-after-login?
         # home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}
         if type(query_dict) is dict:
-            url = self.snaps_url + "/info-after-login?home" + urllib.parse.urlencode(query_dict)
+            url = self.snaps_url + "/info-after-login?home=" + self.query_string(query_dict['home']) + "&search=" + self.query_string(query_dict['search']) + "&product=snap_id:" + query_dict['snap_id_product']
             print(url)
             r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_info_after_login", r.status_code, r.content)
             return r
 
-    def remove_a_snap_product(self, product_id):
-        r = requests.delete(self.snaps_url + "/product/" + product_id, headers=self.get_header_auth())
+    def remove_a_snap_product(self, snap_product_id):
+        r = requests.delete(self.snaps_url + "/product/" + snap_product_id, headers=self.get_header_auth())
         self.print_result("remove_a_snap_product", r.status_code, r.content)
         return r
 
-    def get_snaps_by_snap_product_id(self, snap_product_id, query_dict):
+    def get_snaps_by_snap_product_id(self, snap_product_id, query_dict={}):
         # URL: ```/snaps/product/{snap_product_id}/relatedsnaps?offset={offset}&offset_id={offset_id}&limit={limit}&order={ASC|DESC}&orderby={creation|popularity}```
         if type(query_dict) is dict:
             url = self.snaps_url + "/product/" + snap_product_id + "/relatedsnaps?" + urllib.parse.urlencode(query_dict)
@@ -136,7 +136,12 @@ class Snap(Authentication):
             self.print_result("get_snap_info_after_login", r.status_code, r.content)
             return r
 
+    @staticmethod
+    def query_string(param_dict={}):
+        return ",".join([f'{key}:{value}' for key, value in param_dict.items() if value])
+
 def main():
+
     # snap = Snap("test3@gmail.com", "12345677", "12345")
     # snap.login()
     # snap.get_snap_info_after_login({"home=snap_id": '7623'})
@@ -167,7 +172,6 @@ def main():
     # Snap().get_snaps(query)
     # snap.get_single_snap("7623")
 
-    # image_path = "../img/768px-Python-logo-notext.svg.png"
     # with open(image_path, "rb") as image_file:
     #     encoded_string = "data:img/" + imghdr.what(image_path) + ";base64," + base64.b64encode(image_file.read()).decode('utf-8')
     # print(encoded_string)

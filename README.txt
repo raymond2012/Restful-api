@@ -10,8 +10,21 @@
 
 - General error will be occurred when server encounter internal errors (e.g. query error, syntax error, etc.)
 
+- API Not Found
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "API not found"
+        }
+    }
+    ```
+
 - For get records apis:
     **500**
+
     ```json
     {
         "error": {
@@ -126,6 +139,21 @@
         "error": {
             "code": "INVALID_{{PARAM}}",
             "message": "Invalid {{PARAM}}"
+            // INVALID_EMAIL
+            // Wrong email format, check by this library: https://www.npmjs.com/package/validator
+            // INVALID_PASSWORD
+            // new password length must longer than 6
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_LOGIN_TYPE",
+            "message": "Please login with google email"
         }
     }
     ```
@@ -187,8 +215,9 @@
     ```json
     {
         "user_id": ,
-        "account_type": "application / google",
-        "token": "jwt token"
+        "account_type": "application",
+        "token": "jwt token",
+        "username": "string"
     }
     ```
 
@@ -210,6 +239,10 @@
         "error": {
             "code": "INVALID_PARAM",
             "message": "Invalid PARAM"
+            // INVALID_EMAIL
+            // Wrong email format, check by this library: https://www.npmjs.com/package/validator
+            // INVALID_PASSWORD
+            // new password length must longer than 8
         }
     }
     ```
@@ -246,6 +279,16 @@
 
     **201**
 
+    ```json
+    {
+        "user_id": ,
+        "account_type": "google",
+        "token": "jwt token",
+        "username": "string",
+        "is_reg": true | false // true means new account created
+    }
+    ```
+
     **400**
 
     ```json
@@ -253,6 +296,30 @@
         "error": {
             "code": "MISSING_PARAMS",
             "message": "Please provide device id and google email and profile id"
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_PARAM",
+            "message": "Invalid PARAM"
+            // INVALID_ID_TOKEN
+            // the id_token is invalid or expired
+        }
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_LOGIN_TYPE",
+            "message": "Please login with application email"
         }
     }
     ```
@@ -493,7 +560,7 @@
     }
     ```
 
-    **400**
+    **404**
 
     ```json
     {
@@ -690,6 +757,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
+    }
+    ```
+
 ##### 2.9 Post a comment
 
 - Method: **POST**
@@ -721,7 +799,7 @@
     }
     ```
 
-    **400**
+    **404**
 
     ```json
     {
@@ -820,6 +898,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
+        }
+    }
+    ```
+
 ##### 2.13 Get snaps by snap product id
 
 - Method: **GET**
@@ -877,6 +966,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap product not found"
+        }
+    }
+    ```
+
 #### 3. Users
 
 ##### 3.1 Get user
@@ -924,6 +1024,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.2 Change password
 
 - Method: **POST**
@@ -954,6 +1065,17 @@
         "error": {
             "code": "MISSING_PARAMS",
             "message": "Please specify request body"
+        }
+    }
+    ```
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_PARAMS",
+            "message": "Invalid params"
+            // INVALID_NEW_PASSWORD
+            // new password length must longer than 8
         }
     }
     ```
@@ -1029,6 +1151,10 @@
         "error": {
             "code": "INVALID_{{PARAM}}",
             "message": "Invalid {{PARAM}}"
+            // INVALID_USERNAME
+            //username only contains a-z, A-Z, 0-9 , . and _
+            // INVALID_BIO
+            // bio length less than 300 characters
         }
     }
     ```
@@ -1044,7 +1170,7 @@
     }
     ```
 
-    **400**
+    **403**
 
     ```json
     {
@@ -1182,6 +1308,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.7 Get follower
 
 - Method: **GET**
@@ -1216,6 +1353,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.8 Get following
 
 - Method: **GET**
@@ -1245,6 +1393,17 @@
         }
 
     ]
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
     ```
 
 ##### 3.9 Follow a user
@@ -1281,17 +1440,6 @@
     }
     ```
 
-    **400**
-
-    ```json
-    {
-        "error": {
-            "code": "ADD_ALREADY",
-            "message": "Added follow already"
-        }
-    }
-    ```
-
     **401**
 
     ```json
@@ -1303,13 +1451,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
         }
     }
     ```
@@ -1370,13 +1529,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
         }
     }
     ```
@@ -1445,13 +1615,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
         }
     }
     ```
@@ -1468,17 +1649,6 @@
 
     **201**
 
-    **400**
-
-    ```json
-    {
-        "error": {
-            "code": "ADD_ALREADY",
-            "message": "Added favorite snap already"
-        }
-    }
-    ```
-
     **401**
 
     ```json
@@ -1490,13 +1660,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
         }
     }
     ```
@@ -1543,13 +1724,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap not found"
         }
     }
     ```
@@ -1642,13 +1834,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
         }
     }
     ```
@@ -1665,17 +1868,6 @@
 
     **201**
 
-    **400**
-
-    ```json
-    {
-        "error": {
-            "code": "ADD_ALREADY",
-            "message": "Added favorite product already"
-        }
-    }
-    ```
-
     **401**
 
     ```json
@@ -1687,13 +1879,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap product not found"
         }
     }
     ```
@@ -1713,24 +1916,13 @@
 
 - Method: **DELETE**
 
-- URL: ```/users/{id}/favourite/product/{snap_product_id}```
+- URL: ```/users/{id}/favourite/product/{snap_product_id}?all_products={Y|N}```
 
 - Header: Authorization: "Bearer {token}"
 
 - Response:
 
     **204**
-
-    **400**
-
-    ```json
-    {
-        "error": {
-            "code": "NOT_FOUND",
-            "message": "Favorite product not found"
-        }
-    }
-    ```
 
     **401**
 
@@ -1743,13 +1935,24 @@
     }
     ```
 
-    **401**
+    **403**
 
     ```json
     {
         "error": {
             "code": "UNAUTHORIZED",
             "message": "unauthorized"
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "Snap product not found"
         }
     }
     ```
@@ -1830,6 +2033,17 @@
     ]
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.18 Search user
 
 - Method: **GET**
@@ -1897,6 +2111,17 @@
     }
     ```
 
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.21 Report a user
 
 - Method: **POST**
@@ -1916,6 +2141,30 @@
 - Response:
     **201**
 
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_PARAMS",
+            "message": "Invalid params"
+            // INVALID_REPORT_TYPE
+            // input report type is not 1 | 2 | 3
+        }
+    }
+    ```
+
+    **404**
+
+    ```json
+    {
+        "error": {
+            "code": "NOT_FOUND",
+            "message": "User not found"
+        }
+    }
+    ```
+
 ##### 3.22 Check username valid or not
 
 - Method: **GET**
@@ -1931,6 +2180,19 @@
     ```json
     {
         "result": "boolean"
+    }
+    ```
+
+    **400**
+
+    ```json
+    {
+        "error": {
+            "code": "INVALID_PARAMS",
+            "message": "Invalid params"
+            // INVALID_USERNAME
+            // username only contains a-z, A-Z, 0-9 , . and _
+        }
     }
     ```
 
@@ -2033,7 +2295,7 @@
 
     ```json
     {
-            "background": {
+        "background": {
             "left": "image url",
             "right": "image url"
         }

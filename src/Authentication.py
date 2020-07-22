@@ -53,22 +53,32 @@ class Authentication:
     def get_token(self):
         if self.__token is not None:
             return str(self.__token)
+        else:
+            return None
 
     def get_header_auth(self):
         if self.__token is not None:
             return {"Authorization": "Bearer " + self.__token}
+        else:
+            return {"Authorization": "Bearer "}
 
     def get_header_auth_json(self):
         if self.__token is not None:
             return {"Authorization": "Bearer " + self.__token, "Content-Type": "application/json"}
+        else:
+            return {"Authorization": "Bearer ", "Content-Type": "application/json"}
 
     def get_user_id(self):
         if self.__id is not None:
             return str(self.__id)
+        else:
+            return None
 
     def get_device_id(self):
         if self.__id is not None:
             return str(self.__get_device_id)
+        else:
+            return None
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")

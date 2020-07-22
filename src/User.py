@@ -1,3 +1,5 @@
+import base64
+import imghdr
 import urllib
 
 import requests
@@ -28,14 +30,12 @@ class User(Snap, Miscellaneous):
         self.user_url = "http://api-dev.dress-as.com:4460/users/"
 
     ###Users###
-    @check_token
-    def get_user(self):
+    def get_user(self, user_id):
         # print("Get User Profile")
-        r = requests.get(self.user_url + self.get_user_id() + "/profile")
+        r = requests.get(self.user_url + user_id + "/profile")
         self.print_result("get_user_profile", r.status_code, r.content)
         return r
 
-    @check_token
     def change_password(self, curr, new):
         # print("Change password")
         data_get = {
@@ -48,14 +48,12 @@ class User(Snap, Miscellaneous):
         self.print_result("change_password", r.status_code, r.content)
         return r
 
-    @check_token
-    def update_user(self, edit_profile):
+    def update_user(self, user_id, edit_profile):
         # print("Update User Profile")
-        r = requests.patch(self.user_url + self.get_user_id() + "/profile", headers=self.get_header_auth(), data=edit_profile)
+        r = requests.patch(self.user_url + user_id + "/profile", headers=self.get_header_auth(), data=edit_profile)
         self.print_result("update_user_profile", r.status_code, r.content)
         return r
 
-    @check_token
     def upload_user_profile_pic(self, name, body):
         # print("upload User Profile Pic")
         data_get = {
@@ -66,7 +64,6 @@ class User(Snap, Miscellaneous):
         self.print_result("upload_user_profile_pic", r.status_code, r.content)
         return r
 
-    @check_token
     def remove_user_profile_pic(self):
         # print("Delete User Profile Pic")
         r = requests.delete(self.user_url + self.get_user_id() + "/propic", headers=self.get_header_auth())
@@ -78,7 +75,6 @@ class User(Snap, Miscellaneous):
         self.print_result("count_user_follower_and_following", r.status_code, r.content)
         return r
 
-    @check_token
     def get_follower(self):
         # print("Get Follower")
         r = requests.get(self.user_url + self.get_user_id() + "/follower", headers=self.get_header_auth())
@@ -152,9 +148,10 @@ class User(Snap, Miscellaneous):
         if type(param_dict) is dict:
             url = self.user_url + user_id + "/snaps?" + urllib.parse.urlencode(param_dict)
             r = requests.get(url, headers=self.get_header_auth())
-            self.print_result("get_user_snap", r.status_code, r.content)
-            result_list = list(map(lambda x: x["user_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list": result_list}
+            # self.print_result("get_user_snap", r.status_code, r.content)
+            result_list_user_id = list(map(lambda x: x["user_id"], json.loads(r.content.decode('utf-8'))))
+            result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+            return {"response": r, "list_user_id": result_list_user_id, "list_snap_id": result_list_snap_id}
 
 
     def search_user(self, keyword):
@@ -193,6 +190,12 @@ class User(Snap, Miscellaneous):
         r = requests.get(self.user_url + "following/snaps", headers=self.get_header_auth())
         self.print_result("get_following_users_snaps", r.status_code, r.content)
         return r
+
+    def get_encode_base64_image(self, image_path):
+        with open(image_path, "rb") as image_file:
+            encoded_string = "data:image/" + imghdr.what(image_path) + ";base64," + base64.b64encode(
+                image_file.read()).decode('utf-8')
+        return encoded_string
 
 def main():
     user = User("test3@gmail.com", "12345678", "12234")
