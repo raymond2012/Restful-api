@@ -1,4 +1,5 @@
 import datetime
+import glob
 import json
 import unittest
 
@@ -6,7 +7,7 @@ from src.User import User
 
 
 def test_login_status_code_200():
-    user = User("test2@gmail.com", "12345677", "12345")
+    user = User("test2@gmail.com", "12345678", "12345")
     result_login = user.login()
     assert result_login.status_code == 200, "Expected status code is 200 but the status code is " + str(
         result_login.status_code)
@@ -85,12 +86,19 @@ def test_register_status_code_400_by_existing_email():
 class unit_api_testing(unittest.TestCase):
     def setUp(self) -> None:
         super().__init__()
-        self.user = User("test2@gmail.com", "12345677", "12345")
+        self.user = User("test2@gmail.com", "12345678", "12345")
+        self.user2 = User("test3@gmail.com", "12345678", "12345")
         self.user.login()
-        self.image_path = "img/example_image.jpg"
-        self.image_path_over_10MB = "img/example_image_11MB.jpg"
-        self.image_path_9MB = "img/example_image_9MB.jpg"
-        self.image_path_7MB = "img/example_image_7MB.jpg"
+        self.user2.login()
+        self.unauthorized_user_id = '5099'
+        # Image Path
+        self.image_path_list = glob.glob('img/*.jpg')
+        self.image_path = "img/example_image_10kB.jpg"
+        self.image_path_2MB = "img/example_image_2MB.jpg"
+        self.image_path_4_5MB = "img/Over_5MB/example_image_4-5MB.jpg"
+        self.image_path_11MB = "img/Over_10MB/example_image_11MB.jpg"
+        self.image_path_9MB = "img/Over_5MB/example_image_9MB.jpg"
+        self.image_path_7MB = "img/Over_5MB/example_image_7-74MB.jpg"
         # query template for create snap
         self.snap_created_template = [{
             "title": "Dress" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S"),
@@ -127,7 +135,7 @@ class unit_api_testing(unittest.TestCase):
         assert result_get_single_snap.status_code == 200, "Expected status code is 200 but the status code is " + str(
             result_get_single_snap.status_code)
 
-    ### Abnormal Cases for Get Single Snap###
+    # Abnormal Cases for Get Single Snap
     # def test_get_single_snap_status_code_400_by_missing_snap_id(self):
     #     snap_id = ''
     #     result_get_single_snap = self.user.get_single_snap(snap_id)
@@ -194,19 +202,19 @@ class unit_api_testing(unittest.TestCase):
         result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
         assert result_created_snap_error_code == "MISSING_REF_ID", "Expected Error code is MISSING_REF_ID but the error code is " + result_created_snap_error_code
 
-    ### Abnormal Cases for Create Snap###
-    # def test_create_snap_status_code_400_by_image_size_over_limit(self):
+    # Abnormal Case for create snap over limit image size
+    # def test_create_snap_status_code_400_by_image_size_9MB(self):
     #     snap_cre = self.snap_created_template
-    #     snap_cre['image_body'] = self.user.get_encode_base64_image(self.image_path_over_10MB)
+    #     snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_9MB)
     #     result_created = self.user.create_snaps(snap_cre)
     #     assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
     #         result_created.status_code)
     #     result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
     #     assert result_created_snap_error_code == "IMAGE_SIZE_OVER_LIMIT", "Expected Error code is INVALID_EMAIL but the error code is " + result_created_snap_error_code
-
-    # def test_create_snap_status_code_400_by_image_size_over_limit(self):
+    #
+    # def test_create_snap_status_code_400_by_image_size_11MB(self):
     #     snap_cre = self.snap_created_template
-    #     snap_cre['image_body'] = self.user.get_encode_base64_image(self.image_path_9MB)
+    #     snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_11MB)
     #     result_created = self.user.create_snaps(snap_cre)
     #     assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
     #         result_created.status_code)
@@ -274,25 +282,15 @@ class unit_api_testing(unittest.TestCase):
                    'response'].status_code == 200, "Expected status code is 200 but the status code is " + str(
             result_get_product['response'].status_code)
 
-    def test_get_product_of_a_snap_status_code_404_by_missing_snap_id(self):
-        snap_id = " "
-        result_get_product = self.user.get_products_of_a_snap(snap_id)
-        assert result_get_product[
-                   'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
-            result_get_product['response'].status_code)
-        result_get_product_snap_error_code = \
-        json.loads(result_get_product['response'].content.decode('utf-8'))['error']['code']
-        assert result_get_product_snap_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_product_snap_error_code
-
-    def test_get_product_of_a_snap_status_code_404_by_unexisting_snap_id(self):
-        snap_id = "abc"
-        result_get_product = self.user.get_products_of_a_snap(snap_id)
-        assert result_get_product[
-                   'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
-            result_get_product['response'].status_code)
-        result_get_product_snap_error_code = \
-        json.loads(result_get_product['response'].content.decode('utf-8'))['error']['code']
-        assert result_get_product_snap_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_product_snap_error_code
+    def test_get_product_of_a_snap_status_code_404_by_invalid_snap_id(self):
+        snap_id_list = [" ", "abc"]
+        for snap_id in snap_id_list:
+            result_get_product = self.user.get_products_of_a_snap(snap_id)
+            assert result_get_product[
+                       'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
+                result_get_product['response'].status_code)
+            result_get_product_snap_error_code = json.loads(result_get_product['response'].content.decode('utf-8'))['error']['code']
+            assert result_get_product_snap_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_product_snap_error_code
 
     def test_search_snap_status_code_200(self):
         search_query = {"q": "A", "limit": "40", "order": "DESC", "orderby": "creation"}
@@ -318,7 +316,6 @@ class unit_api_testing(unittest.TestCase):
             'code']
         assert result_search_snap_error_code == "GET_FAIL", "Expected Error code is GET_FAIL but the error code is " + result_search_snap_error_code
 
-
     def test_get_comments_of_a_snap_status_code_200(self):
         snap_id = "7112"
         result_get_comment = self.user.get_snap_comment(snap_id)
@@ -326,25 +323,16 @@ class unit_api_testing(unittest.TestCase):
                    'response'].status_code == 200, "Expected status code is 200 but the status code is " + str(
             result_get_comment['response'].status_code)
 
-    def test_get_comments_of_a_snap_status_code_404_by_missing_snap_id(self):
-        snap_id = " "
-        result_get_comment = self.user.get_snap_comment(snap_id)
-        assert result_get_comment[
-                   'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
-            result_get_comment['response'].status_code)
-        result_get_comment_error_code = json.loads(result_get_comment['response'].content.decode('utf-8'))['error'][
-            'code']
-        assert result_get_comment_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_comment_error_code
-
     def test_get_comments_of_a_snap_status_code_404_by_invalid_snap_id(self):
-        snap_id = "abc"
-        result_get_comment = self.user.get_snap_comment(snap_id)
-        assert result_get_comment[
-                   'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
-            result_get_comment['response'].status_code)
-        result_get_comment_error_code = json.loads(result_get_comment['response'].content.decode('utf-8'))['error'][
-            'code']
-        assert result_get_comment_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_comment_error_code
+        snap_id_list = [" ", "abc"]
+        for snap_id in snap_id_list:
+            result_get_comment = self.user.get_snap_comment(snap_id)
+            assert result_get_comment[
+                       'response'].status_code == 404, "Expected status code is 404 but the status code is " + str(
+                result_get_comment['response'].status_code)
+            result_get_comment_error_code = json.loads(result_get_comment['response'].content.decode('utf-8'))['error'][
+                'code']
+            assert result_get_comment_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_comment_error_code
 
     def test_post_comment_status_code_201(self):
         comment = "Unit Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
@@ -362,23 +350,15 @@ class unit_api_testing(unittest.TestCase):
         result_post_error_code = json.loads(result_post.content.decode('utf-8'))['error']['code']
         assert result_post_error_code == "MISSING_MESSAGE", "Expected Error code is MISSING_MESSAGE but the error code is " + result_post_error_code
 
-    def test_post_comment_status_code_404_by_missing_snap_id(self):
+    def test_post_comment_status_code_404_by_invalid_snap_id(self):
         comment = "Unit Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
-        snap_id = " "
-        result_post = self.user.post_comment(snap_id, comment)
-        assert result_post.status_code == 404, "Expected Status code: 404 but the status code: " + str(
-            result_post.status_code)
-        result_post_error_code = json.loads(result_post.content.decode('utf-8'))['error']['code']
-        assert result_post_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_post_error_code
-
-    def test_post_comment_status_code_404_by_unexisting_snap_id(self):
-        comment = "Unit Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
-        snap_id = "abc"
-        result_post = self.user.post_comment(snap_id, comment)
-        assert result_post.status_code == 404, "Expected Status code: 404 but the status code: " + str(
-            result_post.status_code)
-        result_post_error_code = json.loads(result_post.content.decode('utf-8'))['error']['code']
-        assert result_post_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_post_error_code
+        snap_id_list = [" ", "abc"]
+        for snap_id in snap_id_list:
+            result_post = self.user.post_comment(snap_id, comment)
+            assert result_post.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_post.status_code)
+            result_post_error_code = json.loads(result_post.content.decode('utf-8'))['error']['code']
+            assert result_post_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_post_error_code
 
     def test_post_comment_status_code_401_by_not_login(self):
         comment = "Unit Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
@@ -429,7 +409,7 @@ class unit_api_testing(unittest.TestCase):
         result_get_snap_error_code = json.loads(result_get_snap.content.decode('utf-8'))['error']['code']
         assert result_get_snap_error_code == "MISSING_SNAP_ID", "Expected Error code is MISSING_SNAP_ID but the error code is " + result_get_snap_error_code
 
-    ### Abnormal case for get snap info after login
+    # Abnormal case for get snap info after login
     # def test_get_snap_info_after_login_status_code_400_by_invalid_snap_id_for_search(self):
     #     query = self.query_get_snap_after_login
     #     query['search']['snap_id'] = "abc"
@@ -505,68 +485,73 @@ class unit_api_testing(unittest.TestCase):
         assert result_get_snap_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_snap_error_code
 
     def test_get_user_status_code_200(self):
-        user_id = '5118'
-        result_get_user = self.user.get_user(user_id)
-        assert result_get_user.status_code == 200, "Expected Status code: 200 but the status code: " + str(
-            result_get_user.status_code)
+        user_id_list = [self.user.get_user_id(), self.unauthorized_user_id]
+        for user_id in user_id_list:
+            result_get_user = self.user.get_user(user_id)
+            assert result_get_user.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+                result_get_user.status_code)
 
     def test_get_user_status_code_404_by_missing_user_id(self):
-        user_id = ' '
-        result_get_user = self.user.get_user(user_id)
-        assert result_get_user.status_code == 404, "Expected Status code: 404 but the status code: " + str(
-            result_get_user.status_code)
-        result_get_user_error_code = json.loads(result_get_user.content.decode('utf-8'))['error']['code']
-        assert result_get_user_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_user_error_code
-
-    def test_get_user_status_code_400_by_unexisting_user_id(self):
-        user_id = '143567'
-        result_get_user = self.user.get_user(user_id)
-        assert result_get_user.status_code == 404, "Expected Status code: 404 but the status code: " + str(
-            result_get_user.status_code)
-        result_get_user_error_code = json.loads(result_get_user.content.decode('utf-8'))['error']['code']
-        assert result_get_user_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_user_error_code
+        user_id_list = [' ', ' 123455']
+        for user_id in user_id_list:
+            result_get_user = self.user.get_user(user_id)
+            assert result_get_user.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_get_user.status_code)
+            result_get_user_error_code = json.loads(result_get_user.content.decode('utf-8'))['error']['code']
+            assert result_get_user_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_user_error_code
 
     def test_change_password_status_code_200(self):
-        current_password = '12345677'
+        current_password = '12345678'
         new_password = '12345678'
-        result_change_password = self.user.change_password(current_password, new_password)
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
         assert result_change_password.status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_change_password.status_code)
-        self.user.change_password(new_password, current_password)
+        self.user.change_password(new_password, current_password, self.user.get_user_id())
 
     def test_change_password_status_code_400_by_missing_current_password(self):
         current_password = ''
         new_password = '12345678'
-        result_change_password = self.user.change_password(current_password, new_password)
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
         assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_change_password.status_code)
         result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
         assert result_change_password_error_code == "MISSING_CURR_PASSWORD", "Expected Error code is MISSING_CURR_PASSWORD but the error code is " + result_change_password_error_code
 
     def test_change_password_status_code_400_by_missing_new_password(self):
-        current_password = '12345677'
+        current_password = '12345678'
         new_password = ''
-        result_change_password = self.user.change_password(current_password, new_password)
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
         assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_change_password.status_code)
         result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
         assert result_change_password_error_code == "MISSING_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
 
+    def test_change_password_status_code_401_by_unauthorized_user_id(self):
+        current_password = '12345678'
+        new_password = '12345678'
+        user_id = self.unauthorized_user_id
+        result_change_password = self.user.change_password(current_password, new_password, user_id)
+        assert result_change_password.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_change_password.status_code)
+        result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
+        assert result_change_password_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_change_password_error_code
+        self.user.change_password(new_password, current_password, user_id)
+
     # Abnormal Case for change password by invalid new password
-    # def test_change_password_status_code_400_by_invalid_new_password(self):
-    #     current_password = '12345677'
-    #     new_password = '123'
-    #     result_change_password = self.user.change_password(current_password, new_password)
-    #     assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-    #         result_change_password.status_code)
-    #     result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
-    #     assert result_change_password_error_code == "INVALID_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
+    def test_change_password_status_code_400_by_invalid_new_password(self):
+        current_password = '12345678'
+        new_password = '123'
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
+        assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_change_password.status_code)
+        result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
+        assert result_change_password_error_code == "INVALID_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
 
     def test_change_password_status_code_401_by_not_login(self):
-        current_password = '12345677'
+        current_password = '12345678'
         new_password = '12345678'
         self.user.logout()
-        result_change_password = self.user.change_password(current_password, new_password)
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
         assert result_change_password.status_code == 401, "Expected Status code: 401 but the status code: " + str(
             result_change_password.status_code)
         result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
@@ -576,44 +561,36 @@ class unit_api_testing(unittest.TestCase):
     def test_change_password_status_code_404_by_invalid_current_password(self):
         current_password = '12345'
         new_password = '12345678'
-        result_change_password = self.user.change_password(current_password, new_password)
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
         assert result_change_password.status_code == 404, "Expected Status code: 404 but the status code: " + str(
             result_change_password.status_code)
 
-    def test_update_user_profile_200(self):
+    def test_update_user_profile_status_code_200(self):
         query_profile = dict(firstname="Testing")
         result_update = self.user.update_user(self.user.get_user_id(), query_profile)
         assert result_update.status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_update.status_code)
 
-    def test_update_user_profile_400_by_missing_username(self):
-        query_profile = dict(username="")
+    def test_update_user_profile_status_code_400_by_invalid_username(self):
+        query_profile_list = [dict(username=""), dict(username="!@#$%^&")]
+        for query_profile in query_profile_list:
+            result_update = self.user.update_user(self.user.get_user_id(), query_profile)
+            assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+                result_update.status_code)
+            result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+            assert result_update_error_code == "INVALID_USERNAME", "Expected Error code is INVALID_USERNAME but the error code is " + result_update_error_code
+
+    def test_update_user_profile_status_code_400_by_invalid_bio(self):
+        query_profile = {
+            'bio': "Trump was born and raised in Queens, a borough of New York City, and received a bachelor's degree in economics from the Wharton School. He took charge of his family's real-estate business in 1971, renamed it The Trump Organization, and expanded its operations from Queens and Brooklyn into Manhattan. The company built or renovated skyscrapers, hotels, casinos, and golf courses. Trump later started various side ventures, mostly by licensing his name. He bought the Miss Universe brand of beauty pageants in 1996, and sold it in 2015. He produced and hosted The Apprentice, a reality television series, from 2003 to 2015. As of 2020, Forbes estimated his net worth to be $2.1 billion.[a]Trumps political positions have been described as populist, protectionist, and nationalist. He entered the 2016 presidential race as a Republican and was elected in a surprise victory over Democratic nominee Hillary Clinton, although he lost the popular vote.[b] He became the oldest first-term U.S. president,[c] and the first without prior military or government service. His election and policies have sparked numerous protests. Trump has made many false or misleading statements during his campaign and presidency. The statements have been documented by fact-checkers, and the media have widely described the phenomenon as unprecedented in American politics. Many of his comments and actions have been characterized as racially charged or racist.During his presidency, Trump ordered a travel ban on citizens from several Muslim-majority countries, citing security concerns; after legal challenges, the Supreme Court upheld the policy's third revision. He enacted a tax-cut package for individuals and businesses, rescinding the individual health insurance mandate penalty. He appointed Neil Gorsuch and Brett Kavanaugh to the Supreme Court. In foreign policy, Trump has pursued an America First agenda, withdrawing the U.S. from the Trans-Pacific Partnership trade negotiations, the Paris Agreement on climate change, and the Iran nuclear deal. He imposed import tariffs which triggered a trade war with China, recognized Jerusalem as the capital of Israel, and withdrew U.S. troops from northern Syria. Trump met thrice with North Koreas leader Kim Jong-un, but talks on denuclearization broke down in 2019. Trump began running for a second term shortly after becoming president.A special counsel investigation led by Robert Mueller found that Trump and his campaign welcomed and encouraged Russian interference in the 2016 presidential election under the belief that it would be politically advantageous, but did not find sufficient evidence to press charges of criminal conspiracy or coordination with Russia.[d] Mueller also investigated Trump for obstruction of justice, and his report neither indicted nor exonerated Trump on that offense. After Trump solicited the investigation of a political rival by Ukraine, the House of Representatives impeached him in December 2019 for abuse of power and obstruction of Congress. The Senate acquitted him of both charges in February 2020."
+        }
         result_update = self.user.update_user(self.user.get_user_id(), query_profile)
         assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_update.status_code)
         result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "INVALID_USERNAME", "Expected Error code is INVALID_USERNAME but the error code is " + result_update_error_code
+        assert result_update_error_code == "INVALID_BIO", "Expected Error code is INVALID_USERNAME but the error code is " + result_update_error_code
 
-    def test_update_user_profile_400_by_invalid_username(self):
-        query_profile = dict(username="!@#$%^&")
-        result_update = self.user.update_user(self.user.get_user_id(), query_profile)
-        assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-            result_update.status_code)
-        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "INVALID_USERNAME", "Expected Error code is INVALID_USERNAME but the error code is " + result_update_error_code
-
-    # Abnormal Case for update user profile by invalid bio
-    # def test_update_user_profile_400_by_invalid_username(self):
-    #     query_profile = {
-    #         'bio': "Trump was born and raised in Queens, a borough of New York City, and received a bachelor's degree in economics from the Wharton School. He took charge of his family's real-estate business in 1971, renamed it The Trump Organization, and expanded its operations from Queens and Brooklyn into Manhattan. The company built or renovated skyscrapers, hotels, casinos, and golf courses. Trump later started various side ventures, mostly by licensing his name. He bought the Miss Universe brand of beauty pageants in 1996, and sold it in 2015. He produced and hosted The Apprentice, a reality television series, from 2003 to 2015. As of 2020, Forbes estimated his net worth to be $2.1 billion.[a]Trumps political positions have been described as populist, protectionist, and nationalist. He entered the 2016 presidential race as a Republican and was elected in a surprise victory over Democratic nominee Hillary Clinton, although he lost the popular vote.[b] He became the oldest first-term U.S. president,[c] and the first without prior military or government service. His election and policies have sparked numerous protests. Trump has made many false or misleading statements during his campaign and presidency. The statements have been documented by fact-checkers, and the media have widely described the phenomenon as unprecedented in American politics. Many of his comments and actions have been characterized as racially charged or racist.During his presidency, Trump ordered a travel ban on citizens from several Muslim-majority countries, citing security concerns; after legal challenges, the Supreme Court upheld the policy's third revision. He enacted a tax-cut package for individuals and businesses, rescinding the individual health insurance mandate penalty. He appointed Neil Gorsuch and Brett Kavanaugh to the Supreme Court. In foreign policy, Trump has pursued an America First agenda, withdrawing the U.S. from the Trans-Pacific Partnership trade negotiations, the Paris Agreement on climate change, and the Iran nuclear deal. He imposed import tariffs which triggered a trade war with China, recognized Jerusalem as the capital of Israel, and withdrew U.S. troops from northern Syria. Trump met thrice with North Koreas leader Kim Jong-un, but talks on denuclearization broke down in 2019. Trump began running for a second term shortly after becoming president.A special counsel investigation led by Robert Mueller found that Trump and his campaign welcomed and encouraged Russian interference in the 2016 presidential election under the belief that it would be politically advantageous, but did not find sufficient evidence to press charges of criminal conspiracy or coordination with Russia.[d] Mueller also investigated Trump for obstruction of justice, and his report neither indicted nor exonerated Trump on that offense. After Trump solicited the investigation of a political rival by Ukraine, the House of Representatives impeached him in December 2019 for abuse of power and obstruction of Congress. The Senate acquitted him of both charges in February 2020."
-    #     }
-    #     result_update = self.user.update_user(query_profile)
-    #     assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-    #         result_update.status_code)
-    #     result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-    #     assert result_update_error_code == "INVALID_BIO", "Expected Error code is INVALID_USERNAME but the error code is " + result_update_error_code
-
-    def test_update_user_profile_401_by_not_login(self):
+    def test_update_user_profile_status_code_401_by_not_login(self):
         query_profile = dict(firstname="Testing")
         self.user.logout()
         result_update = self.user.update_user(self.user.get_user_id(), query_profile)
@@ -623,22 +600,296 @@ class unit_api_testing(unittest.TestCase):
         assert result_update_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_update_error_code
         self.user.login()
 
-    def test_update_user_profile_401_by_another_user_id(self):
+    def test_update_user_profile_status_code_401_by_unauthorized_user_id(self):
         query_profile = dict(firstname="Testing")
-        user_id = "5099"
+        user_id = self.unauthorized_user_id
         result_update = self.user.update_user(user_id, query_profile)
         assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
             result_update.status_code)
         result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is NOT_LOGIN but the error code is " + result_update_error_code
+        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
 
-    def test_update_user_profile_401_by_unexisting_user_id(self):
+    def test_update_user_profile_status_code_401_by_missing_user_id(self):
         query_profile = dict(firstname="Testing")
         user_id = " "
         result_update = self.user.update_user(user_id, query_profile)
         assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
             result_update.status_code)
         result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is NOT_LOGIN but the error code is " + result_update_error_code
+        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
 
-    def test
+    def test_update_user_profile_status_code_401_by_invalid_user_id(self):
+        query_profile = dict(firstname="Testing")
+        user_id = "2134567"
+        result_update = self.user.update_user(user_id, query_profile)
+        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
+
+    def test_update_user_profile_picture_status_code_200_by_10kB(self):
+        image_name = "Testing"
+        image_body = self.user.get_encode_base64_image(self.image_path)
+        result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+        assert result_update.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_update.status_code)
+
+    # Abnormal Case for update user profile picture
+    # def test_update_user_profile_picture_status_code_200_by_4-5MB_image(self):
+    #     image_name = "Testing"
+    #     image_body = self.user.get_encode_base64_image(self.image_path_4_5MB)
+    #     result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+    #     assert result_update.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+    #         result_update.status_code)
+
+    def test_update_user_profile_picture_status_code_400_by_missing_image_name(self):
+        image_name = ""
+        image_body = self.user.get_encode_base64_image(self.image_path)
+        result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+        assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "MISSING_IMAGE_NAME", "Expected Error code is MISSING_IMAGE_NAME but the error code is " + result_update_error_code
+
+    def test_update_user_profile_picture_status_code_400_by_missing_image_body(self):
+        image_name = "Testing"
+        image_body = ""
+        result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+        assert result_update.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "MISSING_IMAGE_BODY", "Expected Error code is MISSING_IMAGE_BODY but the error code is " + result_update_error_code
+
+    def test_update_user_profile_picture_status_code_401_by_another_user_id(self):
+        user_id = self.unauthorized_user_id
+        image_name = ""
+        image_body = self.user.get_encode_base64_image(self.image_path)
+        result_update = self.user.upload_user_profile_pic(user_id, image_name, image_body)
+        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
+
+    def test_update_user_profile_picture_status_code_401_by_not_login(self):
+        image_name = "Testing"
+        image_body = self.user.get_encode_base64_image(self.image_path)
+        self.user.logout()
+        result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_update_error_code
+        self.user.login()
+
+    def test_update_user_profile_picture_status_code_404_by_invalid_image_body(self):
+        image_name = "Testing"
+        image_body = "12345678"
+        result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
+        assert result_update.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+            result_update.status_code)
+        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+        assert result_update_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_update_error_code
+
+    def test_remove_user_profile_picture_status_code_204(self):
+        self.test_update_user_profile_picture_status_code_200_by_10kB()
+        result_remove = self.user.remove_user_profile_pic(self.user.get_user_id())
+        assert result_remove.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+            result_remove.status_code)
+
+    def test_remove_user_profile_picture_status_code_401_by_invalid_user_id(self):
+        user_id_list = [' ', '123455']
+        for user_id in user_id_list:
+            self.test_update_user_profile_picture_status_code_200_by_10kB()
+            result_remove = self.user.remove_user_profile_pic(user_id)
+            assert result_remove.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+                result_remove.status_code)
+            result_remove_error_code = json.loads(result_remove.content.decode('utf-8'))['error']['code']
+            assert result_remove_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_remove_error_code
+
+    def test_remove_user_profile_picture_status_code_401_by_unauthorized_user_id(self):
+        self.test_update_user_profile_picture_status_code_200_by_10kB()
+        user_id = self.unauthorized_user_id
+        result_remove = self.user.remove_user_profile_pic(user_id)
+        assert result_remove.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove.status_code)
+        result_remove_error_code = json.loads(result_remove.content.decode('utf-8'))['error']['code']
+        assert result_remove_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_remove_error_code
+
+    def test_remove_user_profile_picture_status_code_401_by_not_login(self):
+        self.test_update_user_profile_picture_status_code_200_by_10kB()
+        self.user.logout()
+        result_remove = self.user.remove_user_profile_pic(self.user.get_user_id())
+        assert result_remove.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove.status_code)
+        result_remove_error_code = json.loads(result_remove.content.decode('utf-8'))['error']['code']
+        assert result_remove_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_remove_error_code
+        self.user.login()
+
+    def test_follow_a_user_status_code_201(self):
+        user_id = self.user.get_user_id()
+        target_user_id = self.user2.get_user_id()
+        result_follow = self.user.follow_user(user_id, target_user_id)
+        assert result_follow.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_follow.status_code)
+
+    def test_follow_a_user_status_code_400_by_invalid_user_id(self):
+        user_id = self.user.get_user_id()
+        target_user_id_list = ['', '123456789']
+        for target_user_id in target_user_id_list:
+            result_follow = self.user.follow_user(user_id, target_user_id)
+            assert result_follow.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_follow.status_code)
+            result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
+            assert result_follow_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_follow_error_code
+
+    def test_follow_a_user_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        target_user_id = self.user2.get_user_id()
+        self.user.logout()
+        result_follow = self.user.follow_user(user_id, target_user_id)
+        assert result_follow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_follow.status_code)
+        result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
+        assert result_follow_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_follow_error_code
+        self.user.login()
+
+    def test_follow_a_user_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        target_user_id = self.user2.get_user_id()
+        result_follow = self.user.follow_user(user_id, target_user_id)
+        assert result_follow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_follow.status_code)
+        result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
+        assert result_follow_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_follow_error_code
+
+    def test_unfollow_a_user_status_code_204(self):
+        user_id = self.user.get_user_id()
+        target_user_id = self.user2.get_user_id()
+        result_unfollow = self.user.unfollow_user(user_id, target_user_id)
+        assert result_unfollow.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+            result_unfollow.status_code)
+
+    def test_unfollow_a_user_status_code_204_by_invalid_user_id(self):
+        user_id = self.user.get_user_id()
+        target_user_id_list = [' ', '123456789']
+        for target_user_id in target_user_id_list:
+            result_unfollow = self.user.unfollow_user(user_id, target_user_id)
+            assert result_unfollow.status_code == 204, "Expected Status code: 404 but the status code: " + str(
+                result_unfollow.status_code)
+
+    def test_unfollow_a_user_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        target_user_id = self.user2.get_user_id()
+        self.user.logout()
+        result_unfollow = self.user.unfollow_user(user_id, target_user_id)
+        assert result_unfollow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_unfollow.status_code)
+        result_unfollow_error_code = json.loads(result_unfollow.content.decode('utf-8'))['error']['code']
+        assert result_unfollow_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_unfollow_error_code
+        self.user.login()
+
+    def test_unfollow_a_user_status_code_400_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        target_user_id = self.user2.get_user_id()
+        result_unfollow = self.user.unfollow_user(user_id, target_user_id)
+        assert result_unfollow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_unfollow.status_code)
+        result_unfollow_error_code = json.loads(result_unfollow.content.decode('utf-8'))['error']['code']
+        assert result_unfollow_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_unfollow_error_code
+
+    def test_get_follower_status_code_200(self):
+        user_id = self.user.get_user_id()
+        result_get_follower = self.user.get_follower(user_id)
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+
+    def test_get_follower_status_code_200_by_not_login(self):
+        user_id = self.user.get_user_id()
+        result_get_follower = self.user.get_follower(user_id)
+        self.user.logout()
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+        self.user.login()
+
+    def test_get_follower_status_code_200_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        result_get_follower = self.user.get_follower(user_id)
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+
+    def test_get_follower_status_code_404_by_invalid_user_id(self):
+        user_id_list = [' ', '12345678']
+        for user_id in user_id_list:
+            result_get_follower = self.user.get_follower(user_id)
+            assert result_get_follower.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_get_follower.status_code)
+            result_get_follower_error_code = json.loads(result_get_follower.content.decode('utf-8'))['error']['code']
+            assert result_get_follower_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_follower_error_code
+
+    def test_get_following_status_code_200(self):
+        user_id = self.user.get_user_id()
+        result_get_following = self.user.get_following(user_id)
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+
+    def test_get_following_status_code_200_by_not_login(self):
+        user_id = self.user.get_user_id()
+        result_get_following = self.user.get_following(user_id)
+        self.user.logout()
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+        self.user.login()
+
+    def test_get_following_status_code_200_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        result_get_following = self.user.get_following(user_id)
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+
+    def test_get_following_status_code_404_by_invalid_user_id(self):
+        user_id_list = [' ', '12345678']
+        for user_id in user_id_list:
+            result_get_following = self.user.get_following(user_id)
+            assert result_get_following.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_get_following.status_code)
+            result_get_follower_error_code = json.loads(result_get_following.content.decode('utf-8'))['error']['code']
+            assert result_get_follower_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_following
+
+    def test_get_favourite_snaps_status_code_200(self):
+        user_id = self.user.get_user_id()
+        result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
+        assert result_get_fav_snaps['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+
+    def test_get_favourite_snaps_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        self.user.logout()
+        result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
+        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_fav_snaps_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_get_fav_snaps_error_code
+        self.user.login()
+
+    def test_get_favourite_snaps_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
+        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
+
+    def test_get_favourite_snaps_status_code_401_by_invalid_user_id(self):
+        user_id_list = [' ', '12345678']
+        for user_id in user_id_list:
+            result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
+            assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+            result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
+            assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
+
+    def test_add_a_snaps_to_favourite_status_code_200(self):
+        user_id = self.user.get_user_id()
+        snap_id = '7112'
+        result_add_fav_snap = self.user.add_snap_to_favourite(user_id, snap_id)
+        assert result_add_fav_snap.status_code == 201, "Expected Status code: 201 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+
+    def test_add_a_snaps_to_favourite_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        snap_id = '7112'
+        result_get_fav_snaps = self.user.add_snap_to_favourite(user_id)
+        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
+
+    def

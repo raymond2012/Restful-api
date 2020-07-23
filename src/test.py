@@ -19,7 +19,7 @@ class complex_test(unittest.TestCase):
         self.login_result = json.loads(self.login.content.decode('utf-8'))
         self.login2 = self.user2.login()
         self.user3.login()
-        self.image_path = "img/example_image.jpg"
+        self.image_path = "img/example_image_10kB.jpg"
 
 
     def test_login_and_logout(self):
@@ -210,22 +210,22 @@ class complex_test(unittest.TestCase):
 
     def test_change_password(self):
         # Check new password missing error
-        result_change_new_missing = self.user.change_password('12345678', '')
+        result_change_new_missing = self.user.change_password('12345678', '', self.user.get_user_id())
         assert result_change_new_missing.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_change_new_missing.status_code)
         new_missing_error_code = json.loads(result_change_new_missing.content.decode('utf-8'))['error']['code']
         assert new_missing_error_code == 'MISSING_NEW_PASSWORD', "Expected Error code: MISSING_NEW_PASSWORD but the code: " + new_missing_error_code
         # Check current password missing error
-        result_change_curr_missing = self.user.change_password('', '12345678')
+        result_change_curr_missing = self.user.change_password('', '12345678', self.user.get_user_id())
         assert result_change_curr_missing.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_change_new_missing.status_code)
         result_change_curr_missing = json.loads(result_change_curr_missing.content.decode('utf-8'))['error']['code']
         assert result_change_curr_missing == 'MISSING_CURR_PASSWORD', "Expected Error code: MISSING_CURR_PASSWORD but the code: " + result_change_curr_missing
         # Check the correct change password
-        result_change_diff = self.user.change_password('12345678', '12345677')
+        result_change_diff = self.user.change_password('12345678', '12345677', self.user.get_user_id())
         assert result_change_diff.status_code == 200, "Expected Status code: 400 but the status code: " + str(
             result_change_diff.status_code)
-        result_change_diff = self.user.change_password('12345677', '12345678')
+        result_change_diff = self.user.change_password('12345677', '12345678', self.user.get_user_id())
         assert result_change_diff.status_code == 200, "Expected Status code: 400 but the status code: " + str(
             result_change_diff.status_code)
 
@@ -240,7 +240,7 @@ class complex_test(unittest.TestCase):
         assert result_prof_update.status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_prof_update.status_code)
         # Update the user profile picture
-        result_prof_pir_update = self.user.upload_user_profile_pic('Testing', encoded_image)
+        result_prof_pir_update = self.user.upload_user_profile_pic(self.user.get_user_id(), 'Testing', encoded_image)
         assert result_prof_pir_update.status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_prof_pir_update.status_code)
         # Get the user profile to check the update successfully or not
@@ -252,7 +252,7 @@ class complex_test(unittest.TestCase):
         assert result_prof_get_json['lastname'] == profile_update['lastname'], "The lastname is wrong"
         assert result_prof_get_json['user_propic'] is not None, "The user_propic is null"
         # Delete the profile picture
-        result_prof_pir_remove = self.user.remove_user_profile_pic()
+        result_prof_pir_remove = self.user.remove_user_profile_pic(self.user.get_user_id())
         assert result_prof_pir_remove.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_prof_pir_remove.status_code)
         # Get the user profile again to check the profile deleted or not
@@ -276,42 +276,42 @@ class complex_test(unittest.TestCase):
 
     def test_follow_a_user(self):
         # User2 post the follow request to the User
-        self.user2.follow_user(self.user.get_user_id())
+        self.user2.follow_user(self.user2.get_user_id(), self.user.get_user_id())
         # User2 get the following result and check User2 follow User successfully by user_id
-        assert str(json.loads(self.user2.get_following().content.decode('utf-8'))['following'][0][
+        assert str(json.loads(self.user2.get_following(self.user2.get_user_id()).content.decode('utf-8'))['following'][0][
                        'user_id']) == self.user.get_user_id()
         # User get the follower result and check User2 follow User successfully by user_id
-        assert str(json.loads(self.user.get_follower().content.decode('utf-8'))['follower'][0][
+        assert str(json.loads(self.user.get_follower(self.user.get_user_id()).content.decode('utf-8'))['follower'][0][
                        'user_id']) == self.user2.get_user_id()
         result_user1_follower = int(
             json.loads(self.user.count_user_follower_and_following().content.decode('utf-8'))['n_follower'])
         assert result_user1_follower > 0
-        result_unfollow = self.user2.unfollow_user(self.user.get_user_id())
+        result_unfollow = self.user2.unfollow_user(self.user2.get_user_id(), self.user.get_user_id())
         assert result_unfollow.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_unfollow.status_code)
-        result_get_follower = json.loads(self.user.get_follower().content.decode('utf-8'))['n_follower']
+        result_get_follower = json.loads(self.user.get_follower(self.user.get_user_id()).content.decode('utf-8'))['n_follower']
         assert int(result_get_follower) == result_user1_follower - 1, "The Expected follower should be " + str(
             result_user1_follower - 1) + " but the result is " + str(result_get_follower)
 
     def test_favourite_snap(self):
         # Add the favourite snap to check the update successfully or not
         snap_id = '7651'
-        result_add_fav_snap = self.user.add_snap_to_favourite(snap_id)
+        result_add_fav_snap = self.user.add_snap_to_favourite(self.user.get_user_id(), snap_id)
         assert result_add_fav_snap.status_code == 201, "Expected Status code: 201 but the status code: " + str(
             result_add_fav_snap.status_code)
         # Get the favourite snap to check the update request sent successfully
-        result_get_fav_snap = self.user.get_favourite_snaps()
+        result_get_fav_snap = self.user.get_favourite_snaps(self.user.get_user_id())
         assert result_get_fav_snap[
                    'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_get_fav_snap.status_code)
-        assert int(snap_id) in result_get_fav_snap['list'], "The snap is added to favourite unsuccessfully"
+        assert int(snap_id) in result_get_fav_snap['snap_id_list'], "The snap is added to favourite unsuccessfully"
         # Delete the favourite snap
         result_remove_fav_snap = self.user.remove_snap_from_favourite(snap_id)
         assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_remove_fav_snap.status_code)
         # Get the favourite snap again to check the profile deleted or not
-        result_get_fav_snap_again = self.user.get_favourite_snaps()
-        assert int(snap_id) not in result_get_fav_snap_again['list'], "The snap is added to favourite unsuccessfully"
+        result_get_fav_snap_again = self.user.get_favourite_snaps(self.user.get_user_id())
+        assert int(snap_id) not in result_get_fav_snap_again['snap_id_list'], "The snap is added to favourite unsuccessfully"
 
     def test_favourite_product(self):
         # Add the favourite product to check the update successfully or not
@@ -325,14 +325,14 @@ class complex_test(unittest.TestCase):
                    'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_get_fav_prod.status_code)
         assert int(snap_product_id) in result_get_fav_prod[
-            'list'], "The snap product is added to favourite unsuccessfully"
+            'snap_product_id_list'], "The snap product is added to favourite unsuccessfully"
         # Delete the favourite snap
         result_remove_fav = self.user.remove_snap_product_to_favourite(snap_product_id)
         assert result_remove_fav.status_code == 204
         # Get the favourite product again to check the profile deleted or not
         result_get_fav_prod_again = self.user.get_favourite_products()
         assert int(snap_product_id) not in result_get_fav_prod_again[
-            'list'], "The snap product is added to favourite unsuccessfully"
+            'snap_product_id_list'], "The snap product is added to favourite unsuccessfully"
 
     def test_get_user_snap_of_a_user(self):
         # Get the user snap of user by user_id

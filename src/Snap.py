@@ -2,6 +2,7 @@ import base64
 import glob
 import imghdr
 import json
+import os
 import urllib
 
 import requests

@@ -36,14 +36,14 @@ class User(Snap, Miscellaneous):
         self.print_result("get_user_profile", r.status_code, r.content)
         return r
 
-    def change_password(self, curr, new):
+    def change_password(self, curr, new, user_id):
         # print("Change password")
         data_get = {
             "curr_password": curr,
             "new_password": new,
             "device_id": self.get_device_id()
         }
-        r = requests.post(self.user_url + self.get_user_id() + "/password", headers=self.get_header_auth(),
+        r = requests.post(self.user_url + user_id + "/password", headers=self.get_header_auth(),
                           data=data_get)
         self.print_result("change_password", r.status_code, r.content)
         return r
@@ -54,19 +54,19 @@ class User(Snap, Miscellaneous):
         self.print_result("update_user_profile", r.status_code, r.content)
         return r
 
-    def upload_user_profile_pic(self, name, body):
+    def upload_user_profile_pic(self, user_id, name, body):
         # print("upload User Profile Pic")
         data_get = {
             "image_name": name,
             "image_body": body
         }
-        r = requests.post(self.user_url + self.get_user_id() + "/propic", headers=self.get_header_auth(), data=data_get)
+        r = requests.post(self.user_url + user_id + "/propic", headers=self.get_header_auth(), data=data_get)
         self.print_result("upload_user_profile_pic", r.status_code, r.content)
         return r
 
-    def remove_user_profile_pic(self):
+    def remove_user_profile_pic(self, user_id):
         # print("Delete User Profile Pic")
-        r = requests.delete(self.user_url + self.get_user_id() + "/propic", headers=self.get_header_auth())
+        r = requests.delete(self.user_url + user_id + "/propic", headers=self.get_header_auth())
         self.print_result("delete_user_profile_pic", r.status_code, r.content)
         return r
 
@@ -75,42 +75,52 @@ class User(Snap, Miscellaneous):
         self.print_result("count_user_follower_and_following", r.status_code, r.content)
         return r
 
-    def get_follower(self):
+    def get_follower(self, user_id):
         # print("Get Follower")
-        r = requests.get(self.user_url + self.get_user_id() + "/follower", headers=self.get_header_auth())
+        url = self.user_url + user_id + "/follower"
+        print(url)
+        r = requests.get(url, headers=self.get_header_auth())
         self.print_result("get_follower", r.status_code, r.content)
         return r
 
-    def get_following(self):
+    def get_following(self,user_id):
         # print("Get Following")
-        r = requests.get(self.user_url + self.get_user_id() + "/following", headers=self.get_header_auth())
+        url = self.user_url + user_id + "/following"
+        print(url)
+        r = requests.get(url, headers=self.get_header_auth())
         self.print_result("get_following", r.status_code, r.content)
         return r
 
-    def follow_user(self, blogger_id):
+    def follow_user(self, user_id, target_user_id):
         # print("Follow a User")
-        r = requests.post(self.user_url + self.get_user_id() + "/follow/" + blogger_id, headers=self.get_header_auth())
+        url = self.user_url + user_id + "/follow/" + target_user_id
+        print(url)
+        r = requests.post(url, headers=self.get_header_auth())
         self.print_result("follow_user", r.status_code, r.content)
         return r
 
-    def unfollow_user(self, blogger_id):
+    def unfollow_user(self, user_id, target_user_id):
         # print("Unfollow a User")
-        r = requests.delete(self.user_url + self.get_user_id() + "/follow/" + blogger_id, headers=self.get_header_auth())
-        self.print_result("follow_user", r.status_code, r.content)
+        url = self.user_url + user_id + "/follow/" + target_user_id
+        r = requests.delete(url, headers=self.get_header_auth())
+        self.print_result("unfollow_user", r.status_code, r.content)
         return r
 
-    def get_favourite_snaps(self, param_dict={}):
+    def get_favourite_snaps(self, user_id, param_dict={}):
         # print("Get Favourite Snaps")
         if type(param_dict) is dict:
             url_param = urllib.parse.urlencode(param_dict)
-            r = requests.get(self.user_url + self.get_user_id() + "/favourite/snap?" + url_param, headers=self.get_header_auth())
+            r = requests.get(self.user_url + user_id + "/favourite/snap?" + url_param, headers=self.get_header_auth())
             self.print_result("get_favourite_snaps", r.status_code, r.content)
-            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list": result_list}
+            if r.status_code == 200:
+                result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "snap_id_list": result_list}
+            else:
+                return {'response': r, "snap_id_list": []}
 
-    def add_snap_to_favourite(self, snap_id):
+    def add_snap_to_favourite(self, user_id, snap_id):
         # print("Add a Snap to Favourite")
-        url = self.user_url + self.get_user_id() + "/favourite/snap/" + snap_id
+        url = self.user_url + user_id + "/favourite/snap/" + snap_id
         print(url)
         r = requests.post(url, headers=self.get_header_auth())
         self.print_result("add_snap_to_favourite", r.status_code, r.content)
@@ -129,7 +139,7 @@ class User(Snap, Miscellaneous):
             r = requests.get(self.user_url + self.get_user_id() + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
             self.print_result("get_favourite_products", r.status_code, r.content)
             result_list = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list": result_list}
+            return {"response": r, "snap_product_id_list": result_list}
 
     def add_snap_product_to_favourite(self, prod_id):
         # print("Add a Product to Favourite")
@@ -198,9 +208,9 @@ class User(Snap, Miscellaneous):
         return encoded_string
 
 def main():
-    user = User("test3@gmail.com", "12345678", "12234")
-    user.login()
-    user.add_snap_to_favourite('7584')
+    # user = User("test3@gmail.com", "12345678", "12234")
+    # user.login()
+    # user.add_snap_to_favourite('7584')
     # user.count_user_follower_and_following('5118')
     # user.get_following_users_snaps()
     # user.get_following()
