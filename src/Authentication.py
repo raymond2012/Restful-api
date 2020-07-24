@@ -24,7 +24,7 @@ class Authentication:
             self.__id = result['user_id']
         return r
 
-    def register(self, location):
+    def register(self, location='Hong Kong'):
         # print("Register")
         data_get = {'email': self.__email,
                     'password': self.__password,
@@ -51,34 +51,25 @@ class Authentication:
         self.print_result("signin_with_google", r.status_code, r.content)
 
     def get_token(self):
-        if self.__token is not None:
-            return str(self.__token)
-        else:
-            return None
+        return str(self.__token) if self.__token is not None else None
 
     def get_header_auth(self):
-        if self.__token is not None:
-            return {"Authorization": "Bearer " + self.__token}
-        else:
-            return {"Authorization": "Bearer "}
+        return {"Authorization": "Bearer " + self.__token} if self.__token is not None else {"Authorization": "Bearer "}
 
     def get_header_auth_json(self):
-        if self.__token is not None:
-            return {"Authorization": "Bearer " + self.__token, "Content-Type": "application/json"}
-        else:
-            return {"Authorization": "Bearer ", "Content-Type": "application/json"}
+        return {"Authorization": "Bearer " + self.__token, "Content-Type": "application/json"} if self.__token is not None else {"Authorization": "Bearer ", "Content-Type": "application/json"}
 
     def get_user_id(self):
-        if self.__id is not None:
-            return str(self.__id)
-        else:
-            return None
+        return str(self.__id) if self.__id is not None else None
 
     def get_device_id(self):
-        if self.__id is not None:
-            return str(self.__get_device_id)
-        else:
-            return None
+        return str(self.__get_device_id) if self.__get_device_id is not None else None
+
+    def get_email(self):
+        return self.__email if self.__email is not None else None
+
+    def get_username(self):
+        return self.__email.split("@")[0] if self.__email is not None else None
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")

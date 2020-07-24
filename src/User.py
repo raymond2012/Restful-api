@@ -126,50 +126,58 @@ class User(Snap, Miscellaneous):
         self.print_result("add_snap_to_favourite", r.status_code, r.content)
         return r
 
-    def remove_snap_from_favourite(self, snap_id):
+    def remove_snap_from_favourite(self, user_id, snap_id):
         # print("Delete a Snap from Favourite")
-        url = self.user_url + self.get_user_id() + "/favourite/snap/" + snap_id
+        url = self.user_url + user_id + "/favourite/snap/" + snap_id
         r = requests.delete(url, headers=self.get_header_auth())
         self.print_result("remove_snap_from_favourite", r.status_code, r.content)
         return r
 
-    def get_favourite_products(self, param_dict={}):
+    def get_favourite_products(self, user_id, param_dict={}):
         # print("Get Favourite Products")
         if type(param_dict) is dict:
-            r = requests.get(self.user_url + self.get_user_id() + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
+            r = requests.get(self.user_url + user_id + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
             self.print_result("get_favourite_products", r.status_code, r.content)
-            result_list = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "snap_product_id_list": result_list}
+            if r.status_code == 200:
+                result_list = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "snap_product_id_list": result_list}
+            else:
+                return {'response': r, "snap_product_id_list": []}
 
-    def add_snap_product_to_favourite(self, prod_id):
+    def add_snap_product_to_favourite(self, user_id, prod_id):
         # print("Add a Product to Favourite")
-        r = requests.post(self.user_url + self.get_user_id() + "/favourite/product/" + prod_id, headers=self.get_header_auth())
+        r = requests.post(self.user_url + user_id + "/favourite/product/" + prod_id, headers=self.get_header_auth())
         self.print_result("add_snap_product_to_favourite", r.status_code, r.content)
         return r
 
-    def remove_snap_product_to_favourite(self, prod_id):
+    def remove_snap_product_to_favourite(self, user_id, prod_id):
         # print("Add a Product to Favourite")
-        r = requests.delete(self.user_url + self.get_user_id() + "/favourite/product/" + prod_id, headers=self.get_header_auth())
+        r = requests.delete(self.user_url + user_id + "/favourite/product/" + prod_id, headers=self.get_header_auth())
         self.print_result("remove_snap_product_to_favourite", r.status_code, r.content)
         return r
 
-    def get_user_snap_of_a_user(self, user_id, param_dict={}):
+    def get_user_snaps_of_a_user(self, user_id, param_dict={}):
         # print("Get Snaps of a user")
         if type(param_dict) is dict:
             url = self.user_url + user_id + "/snaps?" + urllib.parse.urlencode(param_dict)
             r = requests.get(url, headers=self.get_header_auth())
             # self.print_result("get_user_snap", r.status_code, r.content)
-            result_list_user_id = list(map(lambda x: x["user_id"], json.loads(r.content.decode('utf-8'))))
-            result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list_user_id": result_list_user_id, "list_snap_id": result_list_snap_id}
-
+            if r.status_code == 200:
+                result_list_user_id = list(map(lambda x: x["user_id"], json.loads(r.content.decode('utf-8'))))
+                result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "list_user_id": result_list_user_id, "list_snap_id": result_list_snap_id}
+            else:
+                return {"response": r, "list_user_id": [], "list_snap_id": []}
 
     def search_user(self, keyword):
         # print("Search User")
         r = requests.get(self.user_url + "search?q=" + keyword, headers=self.get_header_auth())
         self.print_result("search_user", r.status_code, r.content)
-        result_list = list(map(lambda x: x["username"], json.loads(r.content.decode('utf-8'))))
-        return {"response": r, "list": result_list}
+        if r.status_code == 200:
+            result_list = list(map(lambda x: x["username"], json.loads(r.content.decode('utf-8'))))
+            return {"response": r, "username_list": result_list}
+        else:
+            return {"response": r, "username_list": []}
 
     def forget_password(self, email):
         # print("Forget Password")
@@ -208,8 +216,8 @@ class User(Snap, Miscellaneous):
         return encoded_string
 
 def main():
-    # user = User("test3@gmail.com", "12345678", "12234")
-    # user.login()
+    user = User("test3@gmail.com", "12345678", "12234")
+    user.login()
     # user.add_snap_to_favourite('7584')
     # user.count_user_follower_and_following('5118')
     # user.get_following_users_snaps()
@@ -217,9 +225,10 @@ def main():
     # user.get_following_user_snap('5117')
     # user.get_user_profile()
     # user.get_follower()
-    # user.get_following()
+    # user.get_following(user.get_user_id())
+    user.get_snaps()
     # user.follow_user("5118")
-    # user.unfollow_user("5118")
+    # user.unfollow_user(user.get_user_id()"5117")
     # user.get_favourite_snaps()
     # user.get_user_profile()
     # user.get_follower()

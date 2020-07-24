@@ -55,13 +55,13 @@ class complex_test(unittest.TestCase):
         result_full = self.user.get_snaps(query_full)
         assert result_full['response'].status_code == 200, "Expected Status code is 200 but the status code is " + str(
             self.login.status_code)
-        result_full_list = self.user.get_snaps(query_full)['list']
+        result_full_list = self.user.get_snaps(query_full)['list_snap_id']
         # The offset_id will be defined with the 0th, 10th, 20th and 30th items from the above query
         query_second['offset_id'] = result_full_list[int(len(result_full_list) / 4 - 1)]
         query_third['offset_id'] = result_full_list[int(len(result_full_list) / 2 - 1)]
         query_last['offset_id'] = result_full_list[int(len(result_full_list) * 3 / 4 - 1)]
         # Combine the 4 queries result in one list
-        result_list_combine = self.user.get_snaps(query_first)['list'] + self.user.get_snaps(query_second)['list'] + self.user.get_snaps(query_third)['list'] + self.user.get_snaps(query_last)['list']
+        result_list_combine = self.user.get_snaps(query_first)['list_snap_id'] + self.user.get_snaps(query_second)['list_snap_id'] + self.user.get_snaps(query_third)['list_snap_id'] + self.user.get_snaps(query_last)['list_snap_id']
         # Compare the results from two types of query are the same
         assert result_full_list == result_list_combine, "The results are not the same. Full Result with limit 40: " + result_full_list + ". Full Result of 4 queries with limit 10: " + result_list_combine
 
@@ -82,7 +82,7 @@ class complex_test(unittest.TestCase):
         result_get = json.loads(self.user.get_single_snap(snap_id_testing).content.decode('utf-8'))
         assert result_created['results'][0]['image_path'] == result_get['image_path'], "The image path are not the same"
         # Get the snap by user id and check the result contains the created snap by snap_id
-        result_get_user_snap = self.user.get_user_snap_of_a_user(self.user.get_user_id())
+        result_get_user_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
         assert int(snap_id_testing) in result_get_user_snap[
             'list_user_id'], "The expected created snap id" + snap_id_testing + " is not in the list from get_snap of a user" + \
                              result_get_user_snap['list_user_id']
@@ -171,7 +171,7 @@ class complex_test(unittest.TestCase):
                      search=dict(snap_id='', limit='14', order='DESC', orderby='creation'),
                      product=dict(offset_id="", limit="12"))
         # Get snap
-        result_get_snap = self.user.get_user_snap_of_a_user(user_id, query['home'])
+        result_get_snap = self.user.get_user_snaps_of_a_user(user_id, query['home'])
         assert result_get_snap['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_get_snap['response'].status_code)
         # Search snap
@@ -306,7 +306,7 @@ class complex_test(unittest.TestCase):
             result_get_fav_snap.status_code)
         assert int(snap_id) in result_get_fav_snap['snap_id_list'], "The snap is added to favourite unsuccessfully"
         # Delete the favourite snap
-        result_remove_fav_snap = self.user.remove_snap_from_favourite(snap_id)
+        result_remove_fav_snap = self.user.remove_snap_from_favourite(self.user.get_user_id(), snap_id)
         assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_remove_fav_snap.status_code)
         # Get the favourite snap again to check the profile deleted or not
@@ -316,47 +316,47 @@ class complex_test(unittest.TestCase):
     def test_favourite_product(self):
         # Add the favourite product to check the update successfully or not
         snap_product_id = '5'
-        result_add_fav_prod = self.user.add_snap_product_to_favourite(snap_product_id)
+        result_add_fav_prod = self.user.add_snap_product_to_favourite(self.user.get_user_id(), snap_product_id)
         assert result_add_fav_prod.status_code == 201, "Expected Status code: 201 but the status code: " + str(
             result_add_fav_prod.status_code)
         # Get the favourite product to check the update successfully or not
-        result_get_fav_prod = self.user.get_favourite_products()
+        result_get_fav_prod = self.user.get_favourite_products(self.user.get_user_id())
         assert result_get_fav_prod[
                    'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_get_fav_prod.status_code)
         assert int(snap_product_id) in result_get_fav_prod[
             'snap_product_id_list'], "The snap product is added to favourite unsuccessfully"
         # Delete the favourite snap
-        result_remove_fav = self.user.remove_snap_product_to_favourite(snap_product_id)
+        result_remove_fav = self.user.remove_snap_product_to_favourite(self.user.get_user_id(), snap_product_id)
         assert result_remove_fav.status_code == 204
         # Get the favourite product again to check the profile deleted or not
-        result_get_fav_prod_again = self.user.get_favourite_products()
+        result_get_fav_prod_again = self.user.get_favourite_products(self.user.get_user_id())
         assert int(snap_product_id) not in result_get_fav_prod_again[
             'snap_product_id_list'], "The snap product is added to favourite unsuccessfully"
 
     def test_get_user_snap_of_a_user(self):
         # Get the user snap of user by user_id
         user_id = '5118'
-        result_get_user_snap = self.user.get_user_snap_of_a_user(user_id)
+        result_get_user_snap = self.user.get_user_snaps_of_a_user(user_id)
         # Check the get request sent successfully
         assert result_get_user_snap[
                    'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_get_user_snap['response'].status_code)
         # Check the result
         assert all(i == int(user_id) for i in
-                   result_get_user_snap['list_user_id']), "An snap_id of the item in the product of a snap result list" + result_get_user_snap['list'] + " is not " + user_id
+                   result_get_user_snap['list_user_id']), "An snap_id of the item in the product of a snap result list" + result_get_user_snap['list_snap_id'] + " is not " + user_id
 
-    def test_search_user(self):
-        # Search the user with search word
-        search_word = "howard2"
-        result_search = self.user.search_user(search_word)
-        # Check the get request sent successfully
-        assert result_search['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
-            result_search.status_code)
-        # Check the search word match with username list
-        assert search_word in result_search[
-            'list'], "The search word (" + search_word + ") did not match with the username list " + str(
-            result_search['list'])
+    # def test_search_user(self):
+    #     # Search the user with search word
+    #     search_word = "howard2"
+    #     result_search = self.user.search_user(search_word)
+    #     # Check the get request sent successfully
+    #     assert result_search['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+    #         result_search.status_code)
+    #     # Check the search word match with username list
+    #     assert search_word in result_search[
+    #         'username_list'], "The search word (" + search_word + ") did not match with the username list " + str(
+    #         result_search['username_list'])
 
     def test_forget_password(self):
         # Post a forget password request and check the request sent successfully

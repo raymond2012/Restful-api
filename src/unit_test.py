@@ -2,6 +2,7 @@ import datetime
 import glob
 import json
 import unittest
+import time
 
 from src.User import User
 
@@ -45,7 +46,7 @@ def test_logout_status_code_401_by_not_login_before():
 
 
 def test_register_status_code_200():
-    result_register = User(datetime.datetime.now().strftime("%d%H%M%S") + "@gmail.com", "12345678", '12345').register(
+    result_register = User(datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com", "12345678", '12345').register(
         'Hong Kong')
     assert result_register.status_code == 200, "Expected status code is 200 but the status code is " + str(
         result_register.status_code)
@@ -91,6 +92,8 @@ class unit_api_testing(unittest.TestCase):
         self.user.login()
         self.user2.login()
         self.unauthorized_user_id = '5099'
+        self.fav_snap_id = '7112'
+        self.fav_product_id = '48'
         # Image Path
         self.image_path_list = glob.glob('img/*.jpg')
         self.image_path = "img/example_image_10kB.jpg"
@@ -114,6 +117,12 @@ class unit_api_testing(unittest.TestCase):
                                                search=dict(snap_id='7744', limit='14', order='DESC',
                                                            orderby='creation'),
                                                product=dict(offset_id="", limit="12"))
+        # query template for report user
+        self.report_user_param = dict(user_id="5112", report_type="1", remark="")
+
+    def tearDown(self) -> None:
+        time.sleep(0.1)
+        self.user.login()
 
     def test_logout_status_code_200(self):
         result_logout = self.user.logout()
@@ -242,7 +251,8 @@ class unit_api_testing(unittest.TestCase):
         self.user.login()
 
     def test_remove_snap_status_code_204(self):
-        get_snap = self.user.get_user_snap_of_a_user(self.user.get_user_id())
+        self.test_create_snap_status_code_201()
+        get_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
         snap_id_remove = str(get_snap['list_snap_id'][0])
         result_remove = self.user.remove_snap(snap_id_remove)
         assert result_remove.status_code == 204, "Expected status code is 204 but the status code is " + str(
@@ -265,7 +275,7 @@ class unit_api_testing(unittest.TestCase):
         assert result_remove_snap_error_code == "NOT_FOUND", "Expected Error code is MISSING_PARAMS but the error code is " + result_remove_snap_error_code
 
     def test_remove_snap_status_code_401_by_not_login(self):
-        get_snap = self.user.get_user_snap_of_a_user(self.user.get_user_id())
+        get_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
         snap_id_remove = str(get_snap['list_snap_id'][0])
         self.user.logout()
         result_remove = self.user.remove_snap(snap_id_remove)
@@ -800,19 +810,22 @@ class unit_api_testing(unittest.TestCase):
     def test_get_follower_status_code_200(self):
         user_id = self.user.get_user_id()
         result_get_follower = self.user.get_follower(user_id)
-        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_follower.status_code)
 
     def test_get_follower_status_code_200_by_not_login(self):
         user_id = self.user.get_user_id()
         result_get_follower = self.user.get_follower(user_id)
         self.user.logout()
-        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_follower.status_code)
         self.user.login()
 
     def test_get_follower_status_code_200_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
         result_get_follower = self.user.get_follower(user_id)
-        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_follower.status_code)
+        assert result_get_follower.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_follower.status_code)
 
     def test_get_follower_status_code_404_by_invalid_user_id(self):
         user_id_list = [' ', '12345678']
@@ -826,19 +839,22 @@ class unit_api_testing(unittest.TestCase):
     def test_get_following_status_code_200(self):
         user_id = self.user.get_user_id()
         result_get_following = self.user.get_following(user_id)
-        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_following.status_code)
 
     def test_get_following_status_code_200_by_not_login(self):
         user_id = self.user.get_user_id()
         result_get_following = self.user.get_following(user_id)
         self.user.logout()
-        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_following.status_code)
         self.user.login()
 
     def test_get_following_status_code_200_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
         result_get_following = self.user.get_following(user_id)
-        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_following.status_code)
+        assert result_get_following.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_following.status_code)
 
     def test_get_following_status_code_404_by_invalid_user_id(self):
         user_id_list = [' ', '12345678']
@@ -852,44 +868,388 @@ class unit_api_testing(unittest.TestCase):
     def test_get_favourite_snaps_status_code_200(self):
         user_id = self.user.get_user_id()
         result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
-        assert result_get_fav_snaps['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+        assert result_get_fav_snaps[
+                   'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_fav_snaps['response'].status_code)
 
     def test_get_favourite_snaps_status_code_401_by_not_login(self):
         user_id = self.user.get_user_id()
         self.user.logout()
         result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
-        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
-        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_fav_snaps[
+                   'response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_get_fav_snaps['response'].status_code)
+        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error'][
+            'code']
         assert result_get_fav_snaps_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_get_fav_snaps_error_code
         self.user.login()
 
-    def test_get_favourite_snaps_status_code_401_by_unauthorized_user_id(self):
-        user_id = self.unauthorized_user_id
-        result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
-        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
-        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
-        assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
-
     def test_get_favourite_snaps_status_code_401_by_invalid_user_id(self):
-        user_id_list = [' ', '12345678']
+        user_id_list = [self.unauthorized_user_id, ' ', '12345678']
         for user_id in user_id_list:
             result_get_fav_snaps = self.user.get_favourite_snaps(user_id)
-            assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+            assert result_get_fav_snaps[
+                       'response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(
+                result_get_fav_snaps['response'].status_code)
             result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
             assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
 
-    def test_add_a_snaps_to_favourite_status_code_200(self):
+    def test_add_a_snap_to_favourite_status_code_201(self):
         user_id = self.user.get_user_id()
-        snap_id = '7112'
+        snap_id = self.fav_snap_id
         result_add_fav_snap = self.user.add_snap_to_favourite(user_id, snap_id)
-        assert result_add_fav_snap.status_code == 201, "Expected Status code: 201 but the status code: " + str(result_get_fav_snaps['response'].status_code)
+        assert result_add_fav_snap.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_add_fav_snap.status_code)
 
-    def test_add_a_snaps_to_favourite_status_code_401_by_unauthorized_user_id(self):
+    def test_add_a_snap_to_favourite_status_code_401_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
-        snap_id = '7112'
-        result_get_fav_snaps = self.user.add_snap_to_favourite(user_id)
-        assert result_get_fav_snaps['response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(result_get_fav_snaps['response'].status_code)
-        result_get_fav_snaps_error_code = json.loads(result_get_fav_snaps['response'].content.decode('utf-8'))['error']['code']
-        assert result_get_fav_snaps_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_snaps_error_code
+        snap_id = self.fav_snap_id
+        result_add_fav_snap = self.user.add_snap_to_favourite(user_id, snap_id)
+        assert result_add_fav_snap.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_add_fav_snap.status_code)
+        result_add_fav_snap_error_code = json.loads(result_add_fav_snap.content.decode('utf-8'))['error']['code']
+        assert result_add_fav_snap_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_add_fav_snap_error_code
 
-    def
+    def test_add_a_snap_to_favourite_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        snap_id = self.fav_snap_id
+        self.user.logout()
+        result_add_fav_snap = self.user.add_snap_to_favourite(user_id, snap_id)
+        assert result_add_fav_snap.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_add_fav_snap.status_code)
+        result_add_fav_snap_error_code = json.loads(result_add_fav_snap.content.decode('utf-8'))['error']['code']
+        assert result_add_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_add_fav_snap_error_code
+        self.user.login()
+
+    def test_add_a_snap_to_favourite_status_code_401_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_id_list = ['1234567', ' ', 'abc']
+        for snap_id in snap_id_list:
+            result_add_fav_snap = self.user.add_snap_to_favourite(user_id, snap_id)
+            assert result_add_fav_snap.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_add_fav_snap.status_code)
+            result_add_fav_snap_error_code = json.loads(result_add_fav_snap.content.decode('utf-8'))['error']['code']
+            assert result_add_fav_snap_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_add_fav_snap_error_code
+
+    def test_remove_a_snap_from_favourite_status_code_204(self):
+        user_id = self.user.get_user_id()
+        snap_id = self.fav_snap_id
+        result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
+        assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+            result_remove_fav_snap.status_code)
+
+    def test_remove_a_snap_from_favourite_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        snap_id = self.fav_snap_id
+        result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
+        assert result_remove_fav_snap.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove_fav_snap.status_code)
+        result_remove_fav_snap_error_code = json.loads(result_remove_fav_snap.content.decode('utf-8'))['error']['code']
+        assert result_remove_fav_snap_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_remove_fav_snap_error_code
+
+    def test_remove_a_snap_to_favourite_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        snap_id = self.fav_snap_id
+        self.user.logout()
+        result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
+        assert result_remove_fav_snap.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove_fav_snap.status_code)
+        result_remove_fav_snap_error_code = json.loads(result_remove_fav_snap.content.decode('utf-8'))['error']['code']
+        assert result_remove_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_remove_fav_snap_error_code
+        self.user.login()
+
+    def test_remove_a_snap_to_favourite_status_code_204_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_id_list = ['1234567', ' ', 'abc']
+        for snap_id in snap_id_list:
+            result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
+            assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+                result_remove_fav_snap.status_code)
+
+    def test_get_favourite_products_status_code_200(self):
+        user_id = self.user.get_user_id()
+        result_get_fav_products = self.user.get_favourite_products(user_id)
+        assert result_get_fav_products[
+                   'response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_fav_products['response'].status_code)
+
+    def test_get_favourite_products_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        self.user.logout()
+        result_get_fav_products = self.user.get_favourite_products(user_id)
+        assert result_get_fav_products[
+                   'response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_get_fav_products['response'].status_code)
+        result_get_fav_products_error_code = json.loads(result_get_fav_products['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_fav_products_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_get_fav_products_error_code
+        self.user.login()
+
+    def test_get_favourite_products_status_code_401_by_invalid_user_id(self):
+        user_id_list = [self.unauthorized_user_id, ' ', '12345678']
+        for user_id in user_id_list:
+            result_get_fav_products = self.user.get_favourite_products(user_id)
+            assert result_get_fav_products[
+                       'response'].status_code == 401, "Expected Status code: 401 but the status code: " + str(
+                result_get_fav_products['response'].status_code)
+            result_get_fav_products_error_code = json.loads(result_get_fav_products['response'].content.decode('utf-8'))['error']['code']
+            assert result_get_fav_products_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_get_fav_products_error_code
+
+    def test_add_a_snap_product_to_favourite_status_code_201(self):
+        user_id = self.user.get_user_id()
+        snap_product_id = self.fav_product_id
+        result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_add_fav_snap_product.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_add_fav_snap_product.status_code)
+
+    def test_add_a_product_to_favourite_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        snap_product_id = self.fav_product_id
+        result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_add_fav_snap_product.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_add_fav_snap_product.status_code)
+        result_add_fav_snap_product_error_code = json.loads(result_add_fav_snap_product.content.decode('utf-8'))['error']['code']
+        assert result_add_fav_snap_product_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_add_fav_snap_product_error_code
+
+    def test_add_a_product_to_favourite_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        snap_product_id = self.fav_product_id
+        self.user.logout()
+        result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_add_fav_snap_product.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_add_fav_snap_product.status_code)
+        result_add_fav_snap_product_error_code = json.loads(result_add_fav_snap_product.content.decode('utf-8'))['error']['code']
+        assert result_add_fav_snap_product_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_add_fav_snap_product_error_code
+        self.user.login()
+
+    def test_add_a_product_to_favourite_status_code_401_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_product_id_list = ['1234567', ' ', 'abc']
+        for snap_product_id in snap_product_id_list:
+            result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
+            assert result_add_fav_snap_product.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_add_fav_snap_product.status_code)
+            result_add_fav_snap_product_error_code = json.loads(result_add_fav_snap_product.content.decode('utf-8'))['error']['code']
+            assert result_add_fav_snap_product_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_add_fav_snap_product_error_code
+
+    def test_remove_a_product_from_favourite_status_code_204(self):
+        user_id = self.user.get_user_id()
+        snap_product_id = self.fav_product_id
+        result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_remove_fav_snap_product.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+            result_remove_fav_snap_product.status_code)
+
+    def test_remove_a_product_from_favourite_status_code_401_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        snap_product_id = self.fav_product_id
+        result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_remove_fav_snap_product.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove_fav_snap_product.status_code)
+        result_remove_fav_snap_error_code = json.loads(result_remove_fav_snap_product.content.decode('utf-8'))['error'][
+            'code']
+        assert result_remove_fav_snap_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_remove_fav_snap_error_code
+
+    def test_remove_a_product_to_favourite_status_code_401_by_not_login(self):
+        user_id = self.user.get_user_id()
+        snap_product_id = self.fav_product_id
+        self.user.logout()
+        result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
+        assert result_remove_fav_snap_product.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_remove_fav_snap_product.status_code)
+        result_remove_fav_snap_error_code = json.loads(result_remove_fav_snap_product.content.decode('utf-8'))['error'][
+            'code']
+        assert result_remove_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_remove_fav_snap_error_code
+        self.user.login()
+
+    def test_remove_a_product_to_favourite_status_code_204_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_product_id_list = ['1234567', ' ', 'abc']
+        for snap_product_id in snap_product_id_list:
+            result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
+            assert result_remove_fav_snap_product.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+                result_remove_fav_snap_product.status_code)
+
+    def test_get_snaps_of_a_user_status_code_200(self):
+        user_id = self.user.get_user_id()
+        result_get_snaps = self.user.get_user_snaps_of_a_user(user_id)
+        assert result_get_snaps['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_snaps['response'].status_code)
+
+    def test_get_snaps_of_a_user_status_code_200_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        result_get_snaps = self.user.get_user_snaps_of_a_user(user_id)
+        assert result_get_snaps['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_snaps['response'].status_code)
+
+    def test_get_snaps_of_a_user_status_code_200_by_not_login(self):
+        user_id = self.user.get_user_id()
+        self.user.logout()
+        result_get_snaps = self.user.get_user_snaps_of_a_user(user_id)
+        assert result_get_snaps['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_get_snaps['response'].status_code)
+        self.user.login()
+
+    def test_get_snaps_of_a_user_status_code_404_by_invalid_user_id(self):
+        user_id_list = [' ', '12234567']
+        for user_id in user_id_list:
+            result_get_snaps = self.user.get_user_snaps_of_a_user(user_id)
+            assert result_get_snaps[
+                       'response'].status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_get_snaps['response'].status_code)
+            result_get_snaps_error_code = json.loads(result_get_snaps['response'].content.decode('utf-8'))['error'][
+                'code']
+            assert result_get_snaps_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_get_snaps_error_code
+
+    def test_get_snaps_of_a_user_status_code_500_by_invalid_order_param(self):
+        user_id = self.user.get_user_id()
+        query = {'order': 'abc'}
+        result_get_snaps = self.user.get_user_snaps_of_a_user(user_id, query)
+        assert result_get_snaps['response'].status_code == 500, "Expected Status code: 500 but the status code: " + str(
+            result_get_snaps['response'].status_code)
+        result_get_snaps_error_code = json.loads(result_get_snaps['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_snaps_error_code == "GET_FAIL", "Expected Error code is GET_FAIL but the error code is " + result_get_snaps_error_code
+
+    # def test_search_user_status_code_200(self):
+    #     search_word = "a"
+    #     result_search = self.user.search_user(search_word)
+    #     assert result_search['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(result_search.status_code)
+
+    def test_forget_password_status_code_200(self):
+        email = 'test3@gmail.com'
+        result_forget = self.user.forget_password(email)
+        assert result_forget.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+            result_forget.status_code)
+
+    def test_forget_password_status_code_400_by_missing_email(self):
+        email = ''
+        result_forget = self.user.forget_password(email)
+        assert result_forget.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_forget.status_code)
+        result_forget_error_code = json.loads(result_forget.content.decode('utf-8'))['error']['code']
+        assert result_forget_error_code == "MISSING_EMAIL", "Expected Error code is NOT_LOGIN but the error code is " + result_forget_error_code
+
+    def test_forget_password_status_code_400_by_invalid_email(self):
+        email_list = ['12345@fdvbvdsfrte5rf', 'abc', '2$%^&*(']
+        for email in email_list:
+            result_forget = self.user.forget_password(email)
+            assert result_forget.status_code == 200, "Expected Status code: 400 but the status code: " + str(
+                result_forget.status_code)
+
+    def test_report_a_user_status_code_201(self):
+        report_param = self.report_user_param
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_report.status_code)
+
+    def test_report_a_user_status_code_201_by_not_login(self):
+        report_param = self.report_user_param
+        self.user.logout()
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_report.status_code)
+        self.user.login()
+
+    def test_report_a_user_status_code_201_by_self_user_id(self):
+        report_param = self.report_user_param
+        report_param['user_id'] = self.user.get_user_id()
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 201, "Expected Status code: 201 but the status code: " + str(
+            result_report.status_code)
+
+    def test_report_a_user_status_code_400_by_invalid_report_type(self):
+        report_param = self.report_user_param
+        report_param['report_type'] = '123'
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_report.status_code)
+        result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
+        assert result_report_error_code == "INVALID_REPORT_TYPE", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
+
+    def test_report_a_user_status_code_201_by_missing_report_type(self):
+        report_param = self.report_user_param
+        report_param['report_type'] = ''
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_report.status_code)
+        result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
+        assert result_report_error_code == "MISSING_REPORT_TYPE", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
+
+    def test_report_a_user_status_code_400_by_missing_user_id(self):
+        report_param = self.report_user_param
+        report_param['user_id'] = ''
+        result_report = self.user.report_user(report_param)
+        assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_report.status_code)
+        result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
+        assert result_report_error_code == "MISSING_USER_ID", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
+
+    def test_report_a_user_status_code_404_by_invalid_user_id(self):
+        report_param = self.report_user_param
+        user_id_list = ['abc', '456787654', '%^&*']
+        for user_id in user_id_list:
+            report_param['user_id'] = user_id
+            result_report = self.user.report_user(report_param)
+            assert result_report.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_report.status_code)
+            result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
+            assert result_report_error_code == "NOT_FOUND", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
+
+    def test_check_username_valid_or_not_status_code_200_by_self_username(self):
+        username = self.user.get_username()
+        result_check_username = self.user.check_user_valid(username)
+        assert result_check_username.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_check_username.status_code)
+
+    def test_check_username_valid_or_not_status_code_200_by_unexisting_username(self):
+        username_list = ['qwertyuio', 'br4567ujb', '098765tgb']
+        for username in username_list:
+            result_check_username = self.user.check_user_valid(username)
+            assert result_check_username.status_code == 200, "Expected Status code: 200 but the status code: " + str(
+                result_check_username.status_code)
+
+    def test_check_username_valid_or_not_status_code_400_by_invalid(self):
+        username_list = ['@#$', 'dsfhj@gmai.com', '3435!$#']
+        for username in username_list:
+            result_check_username = self.user.check_user_valid(username)
+            assert result_check_username.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+                result_check_username.status_code)
+            result_check_username_error_code = json.loads(result_check_username.content.decode('utf-8'))['error']['code']
+            assert result_check_username_error_code == "INVALID_USERNAME", "Expected Error code is INVALID_USERNAME but the error code is " + result_check_username_error_code
+
+    def test_check_username_valid_or_not_status_code_401_by_not_login(self):
+        username = self.user.get_username()
+        self.user.logout()
+        result_check_username = self.user.check_user_valid(username)
+        assert result_check_username.status_code == 401, "Expected Status code: 401 but the status code: " + str(result_check_username.status_code)
+        result_check_username_error_code = json.loads(result_check_username.content.decode('utf-8'))['error']['code']
+        assert result_check_username_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_check_username_error_code
+        self.user.login()
+
+    def test_get_following_user_snaps_status_code_200(self):
+        self.test_follow_a_user_status_code_201()
+        result_get = self.user.get_following_users_snaps()
+        assert result_get.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_get.status_code)
+
+    def test_get_following_user_snaps_status_code_401_by_not_login(self):
+        self.test_follow_a_user_status_code_201()
+        self.user.logout()
+        result_get = self.user.get_following_users_snaps()
+        assert result_get.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_get.status_code)
+        result_get_error_code = json.loads(result_get.content.decode('utf-8'))['error']['code']
+        assert result_get_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_get_error_code
+        self.user.login()
+
+    def test_get_privacy_policy_status_code_200(self):
+        result_privacy = self.user.get_privacy_policy()
+        assert result_privacy.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_privacy.status_code)
+
+    def test_get_terms_and_condition_status_code_200(self):
+        result_terms = self.user.get_terms_and_conditions()
+        assert result_terms.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_terms.status_code)
+
+    def test_get_getstart_background_image_status_code_200(self):
+        result_background = self.user.get_background_image()
+        assert result_background.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_background.status_code)
+
+    def test_social_media_list_status_code_200(self):
+        result_media = self.user.get_social_media_list()
+        assert result_media.status_code == 200, "Expected Status code: 200 but the status code: " + str(result_media.status_code)

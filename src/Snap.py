@@ -27,15 +27,15 @@ class Snap(Authentication):
         self.snaps_url = "http://api-dev.dress-as.com:4460/snaps"
         Authentication.__init__(self, email, password, dev_id)
 
-    def get_snaps(self, param_dict):
+    def get_snaps(self, param_dict={}):
         # print("Get Snaps")
         # URL: ```/snaps?filter={filter}offset={offset}&offset_id={offset_id}&limit={limit}&order={ASC|DESC}&orderby={creation|popularity}```
         if type(param_dict) is dict:
             url_param = urllib.parse.urlencode(param_dict)
             r = requests.get(self.snaps_url + "?" + url_param, headers=self.get_header_auth())
-            # self.print_result("get_snaps", r.status_code, r.content)
+            self.print_result("get_snaps", r.status_code, r.content)
             result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list": result_list}
+            return {"response": r, "list_snap_id": result_list}
 
     def get_single_snap(self, snap_id):
         # print("Get Single Snap")
