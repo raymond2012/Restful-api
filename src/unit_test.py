@@ -140,6 +140,7 @@ class unit_api_testing(unittest.TestCase):
         # query template for report user
         self.report_user_param = dict(user_id="5112", report_type="1", remark="")
 
+    # Set Delay time among unit test
     def tearDown(self) -> None:
         time.sleep(0.2)
         self.user.login()
