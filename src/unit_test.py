@@ -14,30 +14,48 @@ def test_login_status_code_200():
         result_login.status_code)
 
 
-def test_login_status_code_400_by_missing_email_and_password():
-    result_login = User().login()
+def test_login_status_code_400_by_missing_email():
+    result_login = User("","12345678","12345").login()
     assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + result_login.status_code
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
     assert result_login_error_code == "MISSING_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
 
 
-def test_login_status_code_400_by_invalid_email_and_password():
-    result_login = User("1235", "12133", "123").login()
-    assert result_login.status_code == 400, "Expected status code is 400 but the status code is " + str(
+def test_login_status_code_400_by_missing_password():
+    result_login = User("test2@gmail.com","","12345").login()
+    assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + result_login.status_code
+    result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
+    assert result_login_error_code == "MISSING_PASSWORD", "Expected Error code is MISSING_PASSWORD but the error code is " + result_login_error_code
+
+
+def test_login_status_code_400_by_invalid_email():
+    email_list = ['test8rtyuhygfd765403', '#!@1132']
+    for email in email_list:
+        result_login = User(email, "12345678", "12345").login()
+        assert result_login.status_code == 400, "Expected status code is 400 but the status code is " + str(
+            result_login.status_code)
+        result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
+        assert result_login_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
+
+
+def test_login_status_code_400_by_unexisting_user():
+    email = 'test8rtyuhygfd765403@gmail.com'
+    result_login = User(email, "12133", "123").login()
+    assert result_login.status_code == 400, "Expected status code is 404 but the status code is " + str(
         result_login.status_code)
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
-    assert result_login_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
+    assert result_login_error_code == "INVALID_PASSWORD", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
 
 
-# def test_login_status_code_404_by_unexisting_user():
-#     result_login = User("test8765403@gmail.com", "12133", "123").login()
-#     assert result_login.status_code == 404, "Expected status code is 404 but the status code is " + str(
-#         result_login.status_code)
-#     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
-#     assert result_login_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
+def test_logout_status_code_200():
+    user = User("test3@gmail.com", "12345678", "12345")
+    user.login()
+    result_logout = user.logout()
+    assert result_logout.status_code == 200, "Expected status code is 200 but the status code is " + str(
+        result_logout.status_code)
 
 
-def test_logout_status_code_401_by_not_login_before():
+def test_logout_status_code_401_by_not_login():
     result_logout = User("test3@gmail.com", "12345678", "12345").logout()
     assert result_logout.status_code == 401, "Expected status code is 401 but the status code is " + str(
         result_logout.status_code)
@@ -68,12 +86,14 @@ def test_register_status_code_400_by_missing_password():
     assert result_register_error_code == "MISSING_PASSWORD", "Expected Error code is INVALID_EMAIL but the error code is " + result_register_error_code
 
 
-def test_register_status_code_400_by_invalid_param():
-    result_register = User("12345", "12345678", '12345').register('Hong Kong')
-    assert result_register.status_code == 400, "Expected status code is 400 but the status code is " + str(
-        result_register.status_code)
-    result_register_error_code = json.loads(result_register.content.decode('utf-8'))['error']['code']
-    assert result_register_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_register_error_code
+def test_register_status_code_400_by_invalid_email():
+    email_list = ['test8rtyuhygfd765403', '#!@1132']
+    for email in email_list:
+        result_register = User(email, "12345678", '12345').register('Hong Kong')
+        assert result_register.status_code == 400, "Expected status code is 400 but the status code is " + str(
+            result_register.status_code)
+        result_register_error_code = json.loads(result_register.content.decode('utf-8'))['error']['code']
+        assert result_register_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_register_error_code
 
 
 def test_register_status_code_400_by_existing_email():
@@ -95,7 +115,7 @@ class unit_api_testing(unittest.TestCase):
         self.fav_snap_id = '7112'
         self.fav_product_id = '48'
         # Image Path
-        self.image_path_list = glob.glob('img/*.jpg')
+        self.image_path_list = glob.glob('img/Over_*/*.jpg')
         self.image_path = "img/example_image_10kB.jpg"
         self.image_path_2MB = "img/example_image_2MB.jpg"
         self.image_path_4_5MB = "img/Over_5MB/example_image_4-5MB.jpg"
@@ -121,13 +141,7 @@ class unit_api_testing(unittest.TestCase):
         self.report_user_param = dict(user_id="5112", report_type="1", remark="")
 
     def tearDown(self) -> None:
-        time.sleep(0.1)
-        self.user.login()
-
-    def test_logout_status_code_200(self):
-        result_logout = self.user.logout()
-        assert result_logout.status_code == 200, "Expected status code is 200 but the status code is " + str(
-            result_logout.status_code)
+        time.sleep(0.2)
         self.user.login()
 
     def test_get_snap_status_code_200(self):
@@ -137,6 +151,21 @@ class unit_api_testing(unittest.TestCase):
         assert result_get_snap[
                    'response'].status_code == 200, "Expected status code is 200 but the status code is " + str(
             result_get_snap.status_code)
+
+    def test_get_snap_status_code_200_by_null_params(self):
+        query_get_snap = {}
+        result_get_snap = self.user.get_snaps(query_get_snap)
+        assert result_get_snap[
+                   'response'].status_code == 200, "Expected status code is 200 but the status code is " + str(
+            result_get_snap.status_code)
+
+    def test_get_snap_status_code_500_by_invalid_order_param(self):
+        query_get_snap = {"order": "abc"}
+        result_get_snap = self.user.get_snaps(query_get_snap)
+        assert result_get_snap['response'].status_code == 500, "Expected status code is 500 but the status code is " + str(
+            result_get_snap.status_code)
+        result_get_snap_error_code = json.loads(result_get_snap['response'].content.decode('utf-8'))['error']['code']
+        assert result_get_snap_error_code == "GET_FAIL", "Expected Error code is MISSING_TITLE but the error code is " + result_get_snap_error_code
 
     def test_get_single_snap_status_code_200(self):
         snap_id = '7116'
@@ -212,23 +241,23 @@ class unit_api_testing(unittest.TestCase):
         assert result_created_snap_error_code == "MISSING_REF_ID", "Expected Error code is MISSING_REF_ID but the error code is " + result_created_snap_error_code
 
     # Abnormal Case for create snap over limit image size
-    # def test_create_snap_status_code_400_by_image_size_9MB(self):
-    #     snap_cre = self.snap_created_template
-    #     snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_9MB)
-    #     result_created = self.user.create_snaps(snap_cre)
-    #     assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
-    #         result_created.status_code)
-    #     result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
-    #     assert result_created_snap_error_code == "IMAGE_SIZE_OVER_LIMIT", "Expected Error code is INVALID_EMAIL but the error code is " + result_created_snap_error_code
-    #
-    # def test_create_snap_status_code_400_by_image_size_11MB(self):
-    #     snap_cre = self.snap_created_template
-    #     snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_11MB)
-    #     result_created = self.user.create_snaps(snap_cre)
-    #     assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
-    #         result_created.status_code)
-    #     result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
-    #     assert result_created_snap_error_code == "IMAGE_SIZE_OVER_LIMIT", "Expected Error code is INVALID_EMAIL but the error code is " + result_created_snap_error_code
+    def test_create_snap_status_code_400_by_image_size_9MB(self):
+        snap_cre = self.snap_created_template
+        snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_9MB)
+        result_created = self.user.create_snaps(snap_cre)
+        assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
+            result_created.status_code)
+        result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
+        assert result_created_snap_error_code == "IMAGE_SIZE_OVER_LIMIT", "Expected Error code is INVALID_EMAIL but the error code is " + result_created_snap_error_code
+
+    def test_create_snap_status_code_400_by_image_size_11MB(self):
+        snap_cre = self.snap_created_template
+        snap_cre[0]['image_body'] = self.user.get_encode_base64_image(self.image_path_11MB)
+        result_created = self.user.create_snaps(snap_cre)
+        assert result_created.status_code == 400, "Expected status code is 200 but the status code is " + str(
+            result_created.status_code)
+        result_created_snap_error_code = json.loads(result_created.content.decode('utf-8'))['error']['code']
+        assert result_created_snap_error_code == "IMAGE_SIZE_OVER_LIMIT", "Expected Error code is INVALID_EMAIL but the error code is " + result_created_snap_error_code
 
     def test_create_snap_status_code_400_by_image_size_over_limit(self):
         snap_cre = self.snap_created_template
@@ -380,8 +409,6 @@ class unit_api_testing(unittest.TestCase):
         result_post_error_code = json.loads(result_post.content.decode('utf-8'))['error']['code']
         assert result_post_error_code == "NOT_LOGIN", "Expected Error code is NOT_FOUND but the error code is " + result_post_error_code
         self.user.login()
-
-    # def test_collect_product_link_click_information_status_code_201(self):
 
     def test_get_snap_info_after_login_status_code_200(self):
         query = dict(snap_id_product='8',
@@ -536,6 +563,15 @@ class unit_api_testing(unittest.TestCase):
         result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
         assert result_change_password_error_code == "MISSING_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
 
+    def test_change_password_status_code_400_by_invalid_new_password(self):
+        current_password = '12345678'
+        new_password = '123'
+        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
+        assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+            result_change_password.status_code)
+        result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
+        assert result_change_password_error_code == "INVALID_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
+
     def test_change_password_status_code_401_by_unauthorized_user_id(self):
         current_password = '12345678'
         new_password = '12345678'
@@ -546,16 +582,6 @@ class unit_api_testing(unittest.TestCase):
         result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
         assert result_change_password_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_change_password_error_code
         self.user.change_password(new_password, current_password, user_id)
-
-    # Abnormal Case for change password by invalid new password
-    def test_change_password_status_code_400_by_invalid_new_password(self):
-        current_password = '12345678'
-        new_password = '123'
-        result_change_password = self.user.change_password(current_password, new_password, self.user.get_user_id())
-        assert result_change_password.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-            result_change_password.status_code)
-        result_change_password_error_code = json.loads(result_change_password.content.decode('utf-8'))['error']['code']
-        assert result_change_password_error_code == "INVALID_NEW_PASSWORD", "Expected Error code is MISSING_NEW_PASSWORD but the error code is " + result_change_password_error_code
 
     def test_change_password_status_code_401_by_not_login(self):
         current_password = '12345678'
@@ -610,32 +636,15 @@ class unit_api_testing(unittest.TestCase):
         assert result_update_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_update_error_code
         self.user.login()
 
-    def test_update_user_profile_status_code_401_by_unauthorized_user_id(self):
-        query_profile = dict(firstname="Testing")
-        user_id = self.unauthorized_user_id
-        result_update = self.user.update_user(user_id, query_profile)
-        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
-            result_update.status_code)
-        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
-
-    def test_update_user_profile_status_code_401_by_missing_user_id(self):
-        query_profile = dict(firstname="Testing")
-        user_id = " "
-        result_update = self.user.update_user(user_id, query_profile)
-        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
-            result_update.status_code)
-        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
-
     def test_update_user_profile_status_code_401_by_invalid_user_id(self):
         query_profile = dict(firstname="Testing")
-        user_id = "2134567"
-        result_update = self.user.update_user(user_id, query_profile)
-        assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
-            result_update.status_code)
-        result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
-        assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
+        user_id_list = [self.unauthorized_user_id, " ", "2134567"]
+        for user_id in user_id_list:
+            result_update = self.user.update_user(user_id, query_profile)
+            assert result_update.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+                result_update.status_code)
+            result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
+            assert result_update_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_update_error_code
 
     def test_update_user_profile_picture_status_code_200_by_10kB(self):
         image_name = "Testing"
@@ -645,7 +654,7 @@ class unit_api_testing(unittest.TestCase):
             result_update.status_code)
 
     # Abnormal Case for update user profile picture
-    # def test_update_user_profile_picture_status_code_200_by_4-5MB_image(self):
+    # def test_update_user_profile_picture_status_code_200_by_4_5MB_image(self):
     #     image_name = "Testing"
     #     image_body = self.user.get_encode_base64_image(self.image_path_4_5MB)
     #     result_update = self.user.upload_user_profile_pic(self.user.get_user_id(), image_name, image_body)
@@ -670,7 +679,7 @@ class unit_api_testing(unittest.TestCase):
         result_update_error_code = json.loads(result_update.content.decode('utf-8'))['error']['code']
         assert result_update_error_code == "MISSING_IMAGE_BODY", "Expected Error code is MISSING_IMAGE_BODY but the error code is " + result_update_error_code
 
-    def test_update_user_profile_picture_status_code_401_by_another_user_id(self):
+    def test_update_user_profile_picture_status_code_401_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
         image_name = ""
         image_body = self.user.get_encode_base64_image(self.image_path)
@@ -742,16 +751,6 @@ class unit_api_testing(unittest.TestCase):
         assert result_follow.status_code == 201, "Expected Status code: 201 but the status code: " + str(
             result_follow.status_code)
 
-    def test_follow_a_user_status_code_400_by_invalid_user_id(self):
-        user_id = self.user.get_user_id()
-        target_user_id_list = ['', '123456789']
-        for target_user_id in target_user_id_list:
-            result_follow = self.user.follow_user(user_id, target_user_id)
-            assert result_follow.status_code == 404, "Expected Status code: 404 but the status code: " + str(
-                result_follow.status_code)
-            result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
-            assert result_follow_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_follow_error_code
-
     def test_follow_a_user_status_code_401_by_not_login(self):
         user_id = self.user.get_user_id()
         target_user_id = self.user2.get_user_id()
@@ -772,6 +771,16 @@ class unit_api_testing(unittest.TestCase):
         result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
         assert result_follow_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_follow_error_code
 
+    def test_follow_a_user_status_code_404_by_invalid_user_id(self):
+        user_id = self.user.get_user_id()
+        target_user_id_list = ['', '123456789']
+        for target_user_id in target_user_id_list:
+            result_follow = self.user.follow_user(user_id, target_user_id)
+            assert result_follow.status_code == 404, "Expected Status code: 404 but the status code: " + str(
+                result_follow.status_code)
+            result_follow_error_code = json.loads(result_follow.content.decode('utf-8'))['error']['code']
+            assert result_follow_error_code == "NOT_FOUND", "Expected Error code is NOT_FOUND but the error code is " + result_follow_error_code
+
     def test_unfollow_a_user_status_code_204(self):
         user_id = self.user.get_user_id()
         target_user_id = self.user2.get_user_id()
@@ -787,6 +796,15 @@ class unit_api_testing(unittest.TestCase):
             assert result_unfollow.status_code == 204, "Expected Status code: 404 but the status code: " + str(
                 result_unfollow.status_code)
 
+    def test_unfollow_a_user_status_code_400_by_unauthorized_user_id(self):
+        user_id = self.unauthorized_user_id
+        target_user_id = self.user2.get_user_id()
+        result_unfollow = self.user.unfollow_user(user_id, target_user_id)
+        assert result_unfollow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
+            result_unfollow.status_code)
+        result_unfollow_error_code = json.loads(result_unfollow.content.decode('utf-8'))['error']['code']
+        assert result_unfollow_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_unfollow_error_code
+
     def test_unfollow_a_user_status_code_401_by_not_login(self):
         user_id = self.user.get_user_id()
         target_user_id = self.user2.get_user_id()
@@ -797,15 +815,6 @@ class unit_api_testing(unittest.TestCase):
         result_unfollow_error_code = json.loads(result_unfollow.content.decode('utf-8'))['error']['code']
         assert result_unfollow_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_unfollow_error_code
         self.user.login()
-
-    def test_unfollow_a_user_status_code_400_by_unauthorized_user_id(self):
-        user_id = self.unauthorized_user_id
-        target_user_id = self.user2.get_user_id()
-        result_unfollow = self.user.unfollow_user(user_id, target_user_id)
-        assert result_unfollow.status_code == 401, "Expected Status code: 401 but the status code: " + str(
-            result_unfollow.status_code)
-        result_unfollow_error_code = json.loads(result_unfollow.content.decode('utf-8'))['error']['code']
-        assert result_unfollow_error_code == "UNAUTHORIZED", "Expected Error code is UNAUTHORIZED but the error code is " + result_unfollow_error_code
 
     def test_get_follower_status_code_200(self):
         user_id = self.user.get_user_id()
@@ -921,7 +930,7 @@ class unit_api_testing(unittest.TestCase):
         assert result_add_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_add_fav_snap_error_code
         self.user.login()
 
-    def test_add_a_snap_to_favourite_status_code_401_by_invalid_snap_id(self):
+    def test_add_a_snap_to_favourite_status_code_404_by_invalid_snap_id(self):
         user_id = self.user.get_user_id()
         snap_id_list = ['1234567', ' ', 'abc']
         for snap_id in snap_id_list:
@@ -937,6 +946,14 @@ class unit_api_testing(unittest.TestCase):
         result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
         assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_remove_fav_snap.status_code)
+
+    def test_remove_a_snap_to_favourite_status_code_204_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_id_list = ['1234567', ' ', 'abc']
+        for snap_id in snap_id_list:
+            result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
+            assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+                result_remove_fav_snap.status_code)
 
     def test_remove_a_snap_from_favourite_status_code_401_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
@@ -957,14 +974,6 @@ class unit_api_testing(unittest.TestCase):
         result_remove_fav_snap_error_code = json.loads(result_remove_fav_snap.content.decode('utf-8'))['error']['code']
         assert result_remove_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_remove_fav_snap_error_code
         self.user.login()
-
-    def test_remove_a_snap_to_favourite_status_code_204_by_invalid_snap_id(self):
-        user_id = self.user.get_user_id()
-        snap_id_list = ['1234567', ' ', 'abc']
-        for snap_id in snap_id_list:
-            result_remove_fav_snap = self.user.remove_snap_from_favourite(user_id, snap_id)
-            assert result_remove_fav_snap.status_code == 204, "Expected Status code: 204 but the status code: " + str(
-                result_remove_fav_snap.status_code)
 
     def test_get_favourite_products_status_code_200(self):
         user_id = self.user.get_user_id()
@@ -1038,6 +1047,14 @@ class unit_api_testing(unittest.TestCase):
         assert result_remove_fav_snap_product.status_code == 204, "Expected Status code: 204 but the status code: " + str(
             result_remove_fav_snap_product.status_code)
 
+    def test_remove_a_product_to_favourite_status_code_204_by_invalid_snap_id(self):
+        user_id = self.user.get_user_id()
+        snap_product_id_list = ['1234567', ' ', 'abc']
+        for snap_product_id in snap_product_id_list:
+            result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
+            assert result_remove_fav_snap_product.status_code == 204, "Expected Status code: 204 but the status code: " + str(
+                result_remove_fav_snap_product.status_code)
+
     def test_remove_a_product_from_favourite_status_code_401_by_unauthorized_user_id(self):
         user_id = self.unauthorized_user_id
         snap_product_id = self.fav_product_id
@@ -1059,14 +1076,6 @@ class unit_api_testing(unittest.TestCase):
             'code']
         assert result_remove_fav_snap_error_code == "NOT_LOGIN", "Expected Error code is NOT_LOGIN but the error code is " + result_remove_fav_snap_error_code
         self.user.login()
-
-    def test_remove_a_product_to_favourite_status_code_204_by_invalid_snap_id(self):
-        user_id = self.user.get_user_id()
-        snap_product_id_list = ['1234567', ' ', 'abc']
-        for snap_product_id in snap_product_id_list:
-            result_remove_fav_snap_product = self.user.remove_snap_product_to_favourite(user_id, snap_product_id)
-            assert result_remove_fav_snap_product.status_code == 204, "Expected Status code: 204 but the status code: " + str(
-                result_remove_fav_snap_product.status_code)
 
     def test_get_snaps_of_a_user_status_code_200(self):
         user_id = self.user.get_user_id()
@@ -1108,13 +1117,8 @@ class unit_api_testing(unittest.TestCase):
         result_get_snaps_error_code = json.loads(result_get_snaps['response'].content.decode('utf-8'))['error']['code']
         assert result_get_snaps_error_code == "GET_FAIL", "Expected Error code is GET_FAIL but the error code is " + result_get_snaps_error_code
 
-    # def test_search_user_status_code_200(self):
-    #     search_word = "a"
-    #     result_search = self.user.search_user(search_word)
-    #     assert result_search['response'].status_code == 200, "Expected Status code: 200 but the status code: " + str(result_search.status_code)
-
     def test_forget_password_status_code_200(self):
-        email = 'test3@gmail.com'
+        email = self.user.get_email()
         result_forget = self.user.forget_password(email)
         assert result_forget.status_code == 200, "Expected Status code: 200 but the status code: " + str(
             result_forget.status_code)
@@ -1155,23 +1159,25 @@ class unit_api_testing(unittest.TestCase):
         assert result_report.status_code == 201, "Expected Status code: 201 but the status code: " + str(
             result_report.status_code)
 
-    def test_report_a_user_status_code_400_by_invalid_report_type(self):
-        report_param = self.report_user_param
-        report_param['report_type'] = '123'
-        result_report = self.user.report_user(report_param)
-        assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-            result_report.status_code)
-        result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
-        assert result_report_error_code == "INVALID_REPORT_TYPE", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
-
     def test_report_a_user_status_code_201_by_missing_report_type(self):
         report_param = self.report_user_param
-        report_param['report_type'] = ''
+        report_param['report_type'] = ' '
         result_report = self.user.report_user(report_param)
         assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
             result_report.status_code)
         result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
         assert result_report_error_code == "MISSING_REPORT_TYPE", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
+
+    def test_report_a_user_status_code_400_by_invalid_report_type(self):
+        report_param = self.report_user_param
+        report_type_list = ['123', 'abc', '#$%', ' ']
+        for report_type in report_type_list:
+            report_param['report_type'] = report_type
+            result_report = self.user.report_user(report_param)
+            assert result_report.status_code == 400, "Expected Status code: 400 but the status code: " + str(
+                result_report.status_code)
+            result_report_error_code = json.loads(result_report.content.decode('utf-8'))['error']['code']
+            assert result_report_error_code == "INVALID_REPORT_TYPE", "Expected Error code is NOT_LOGIN but the error code is " + result_report_error_code
 
     def test_report_a_user_status_code_400_by_missing_user_id(self):
         report_param = self.report_user_param
@@ -1205,7 +1211,7 @@ class unit_api_testing(unittest.TestCase):
             assert result_check_username.status_code == 200, "Expected Status code: 200 but the status code: " + str(
                 result_check_username.status_code)
 
-    def test_check_username_valid_or_not_status_code_400_by_invalid(self):
+    def test_check_username_valid_or_not_status_code_400_by_invalid_username(self):
         username_list = ['@#$', 'dsfhj@gmai.com', '3435!$#']
         for username in username_list:
             result_check_username = self.user.check_user_valid(username)

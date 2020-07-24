@@ -34,8 +34,11 @@ class Snap(Authentication):
             url_param = urllib.parse.urlencode(param_dict)
             r = requests.get(self.snaps_url + "?" + url_param, headers=self.get_header_auth())
             self.print_result("get_snaps", r.status_code, r.content)
-            result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-            return {"response": r, "list_snap_id": result_list}
+            if r.status_code == 200:
+                result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "list_snap_id": result_list}
+            else:
+                return {"response": r, "list_snap_id": []}
 
     def get_single_snap(self, snap_id):
         # print("Get Single Snap")
@@ -72,7 +75,7 @@ class Snap(Authentication):
                 result_list_snap_product_id = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))['products']))
                 return {"response": r, "list_snap_id": result_list_snap_id, "list_product_id": result_list_snap_product_id}
             else:
-                return {"response": r, "list_snap_id": "", "list_product_id": ""}
+                return {"response": r, "list_snap_id": [], "list_product_id": []}
 
     def search_snaps(self, query_dict):
         # print("Search Snaps")
@@ -86,7 +89,7 @@ class Snap(Authentication):
                 result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
                 return {"response": r, "list_snap_id": result_list_snap_id}
             else:
-                return {"response": r, "list_snap_id": ""}
+                return {"response": r, "list_snap_id": []}
 
     def get_snap_comment(self, snap_id, query_dict={}):
         # print("Get Commment of a Snap")

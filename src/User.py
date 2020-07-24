@@ -1,4 +1,5 @@
 import base64
+import glob
 import imghdr
 import urllib
 
@@ -216,8 +217,10 @@ class User(Snap, Miscellaneous):
         return encoded_string
 
 def main():
-    user = User("test3@gmail.com", "12345678", "12234")
-    user.login()
+    image_path_list = glob.glob('img/Over_*/*.jpg')
+    print(image_path_list)
+    # user = User("test3@gmail.com", "12345678", "12234")
+    # user.login()
     # user.add_snap_to_favourite('7584')
     # user.count_user_follower_and_following('5118')
     # user.get_following_users_snaps()
@@ -226,7 +229,8 @@ def main():
     # user.get_user_profile()
     # user.get_follower()
     # user.get_following(user.get_user_id())
-    user.get_snaps()
+    # result = user.get_snaps({'order': 'abc'})
+    # print(result['response'].status_code)
     # user.follow_user("5118")
     # user.unfollow_user(user.get_user_id()"5117")
     # user.get_favourite_snaps()
