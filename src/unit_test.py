@@ -16,14 +16,14 @@ def test_login_status_code_200():
 
 def test_login_status_code_400_by_missing_email():
     result_login = User("","12345678","12345").login()
-    assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + result_login.status_code
+    assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + str(result_login.status_code)
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
     assert result_login_error_code == "MISSING_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
 
 
 def test_login_status_code_400_by_missing_password():
     result_login = User("test2@gmail.com","","12345").login()
-    assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + result_login.status_code
+    assert result_login.status_code == 400, "Expected Status Code is 400 but the status code is " + str(result_login.status_code)
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
     assert result_login_error_code == "MISSING_PASSWORD", "Expected Error code is MISSING_PASSWORD but the error code is " + result_login_error_code
 
@@ -38,10 +38,10 @@ def test_login_status_code_400_by_invalid_email():
         assert result_login_error_code == "INVALID_EMAIL", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
 
 
-def test_login_status_code_400_by_unexisting_user():
+def test_login_status_code_404_by_unexisting_user():
     email = 'test8rtyuhygfd765403@gmail.com'
     result_login = User(email, "12133", "123").login()
-    assert result_login.status_code == 400, "Expected status code is 400 but the status code is " + str(
+    assert result_login.status_code == 404, "Expected status code is 404 but the status code is " + str(
         result_login.status_code)
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
     assert result_login_error_code == "INVALID_PASSWORD", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
@@ -63,10 +63,10 @@ def test_logout_status_code_401_by_not_login():
     assert result_logout_error_code == "NOT_LOGIN", "Expected Error code is INVALID_EMAIL but the error code is " + result_logout_error_code
 
 
-def test_register_status_code_200():
+def test_register_status_code_201():
     result_register = User(datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com", "12345678", '12345').register(
         'Hong Kong')
-    assert result_register.status_code == 200, "Expected status code is 200 but the status code is " + str(
+    assert result_register.status_code == 201, "Expected status code is 200 but the status code is " + str(
         result_register.status_code)
 
 
