@@ -41,7 +41,7 @@ def test_login_status_code_400_by_invalid_email():
 def test_login_status_code_400_by_unexisting_user():
     email = 'test8rtyuhygfd765403@gmail.com'
     result_login = User(email, "12133", "123").login()
-    assert result_login.status_code == 400, "Expected status code is 404 but the status code is " + str(
+    assert result_login.status_code == 400, "Expected status code is 400 but the status code is " + str(
         result_login.status_code)
     result_login_error_code = json.loads(result_login.content.decode('utf-8'))['error']['code']
     assert result_login_error_code == "INVALID_PASSWORD", "Expected Error code is INVALID_EMAIL but the error code is " + result_login_error_code
