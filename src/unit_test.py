@@ -66,7 +66,7 @@ def test_logout_status_code_401_by_not_login():
 def test_register_status_code_201():
     result_register = User(datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com", "12345678", '12345').register(
         'Hong Kong')
-    assert result_register.status_code == 201, "Expected status code is 200 but the status code is " + str(
+    assert result_register.status_code == 201, "Expected status code is 201 but the status code is " + str(
         result_register.status_code)
 
 
