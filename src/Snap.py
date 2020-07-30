@@ -1,8 +1,4 @@
-import base64
-import glob
-import imghdr
 import json
-import os
 import urllib
 
 import requests
@@ -23,9 +19,9 @@ def check_token(func):
 class Snap(Authentication):
 
     def __init__(self, email="", password="", dev_id=""):
-        self.gcs_products_url = "http://api-dev.dress-as.com:4460/gcsproducts"
-        self.snaps_url = "http://api-dev.dress-as.com:4460/snaps"
         Authentication.__init__(self, email, password, dev_id)
+        self.gcs_products_url = self.get_base_url() + "gcsproducts"
+        self.snaps_url = self.get_base_url() + "snaps"
 
     def get_snaps(self, param_dict={}):
         # print("Get Snaps")
@@ -120,7 +116,10 @@ class Snap(Authentication):
         # URL: /snaps/info-after-login?
         # home=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity}&search=snap_id:{snap_id},order:{DESC|ASC},orderby:{creation|popularity},q:{keyword}
         if type(query_dict) is dict:
-            url = self.snaps_url + "/info-after-login?home=" + self.query_string(query_dict['home']) + "&search=" + self.query_string(query_dict['search']) + "&product=snap_id:" + query_dict['snap_id_product']
+            home_url = "home=" + self.dict_query_to_string(query_dict['home']) if 'home' in query_dict.keys() is not None else ""
+            search_url = "search=" + self.dict_query_to_string(query_dict['search']) if 'search' in query_dict.keys() is not None else ""
+            product_url = "product=q:" + query_dict['product']['snap_id_product'] if 'product' in query_dict.keys() is not None else ""
+            url = self.snaps_url + "/info-after-login?" + home_url + "&" + search_url + "&" + product_url
             print(url)
             r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_info_after_login", r.status_code, r.content)
@@ -141,7 +140,7 @@ class Snap(Authentication):
             return r
 
     @staticmethod
-    def query_string(param_dict={}):
+    def dict_query_to_string(param_dict={}):
         return ",".join([f'{key}:{value}' for key, value in param_dict.items() if value])
 
 def main():

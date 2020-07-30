@@ -1,14 +1,10 @@
 import base64
-import glob
 import imghdr
+import json
 import urllib
 
 import requests
-import json
-import pytest
-import datetime
 
-from src.Authentication import Authentication
 from src.Miscellaneous import Miscellaneous
 from src.Snap import Snap
 
@@ -19,7 +15,6 @@ def check_token(func):
             raise ValueError
         else:
             return func(self, *args, **kwargs)
-
     return inner
 
 
@@ -28,7 +23,7 @@ class User(Snap, Miscellaneous):
     def __init__(self, email="", password="", dev_id=""):
         Snap.__init__(self, email, password, dev_id)
         Miscellaneous.__init__(self)
-        self.user_url = "http://api-dev.dress-as.com:4460/users/"
+        self.user_url = self.get_base_url() + "users/"
 
     ###Users###
     def get_user(self, user_id):
@@ -217,8 +212,12 @@ class User(Snap, Miscellaneous):
         return encoded_string
 
 def main():
-    image_path_list = glob.glob('img/Over_*/*.jpg')
-    print(image_path_list)
+    query_get_snap_after_login = dict(home=dict(snap_id='7112', offset_id='7806', limit="14", order="DESC",
+                                                orderby="creation"),
+                                      search=dict(snap_id='7744', limit='14', order='DESC', orderby='creation'),
+                                      product=dict(snap_id_product='8',offset_id="", limit="12"))
+    query = {key: val for key, val in query_get_snap_after_login.items() if key == 'home' or key == 'product'}
+    User().get_snap_info_after_login(query)
     # user = User("test3@gmail.com", "12345678", "12234")
     # user.login()
     # user.add_snap_to_favourite('7584')

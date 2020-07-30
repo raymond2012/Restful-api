@@ -7,7 +7,8 @@ class Authentication:
         self.__email = email
         self.__password = password
         self.__get_device_id = dev_id
-        self.__auth_url = "http://api-dev.dress-as.com:4460/users/"
+        self.__base_url = "http://api-dev.dress-as.com:4460/"
+        self.__auth_url = self.__base_url + "users/"
         self.__token = ""
         self.__id = ""
 
@@ -70,6 +71,9 @@ class Authentication:
 
     def get_username(self):
         return self.__email.split("@")[0] if self.__email is not None else None
+
+    def get_base_url(self):
+        return self.__base_url if self.__base_url is not None else None
 
     # if __name__ == '__main__':
     #     x = login("test3@gmail.com", "12345677", "12345")
