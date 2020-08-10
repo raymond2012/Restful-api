@@ -145,8 +145,9 @@ class Snap(Authentication):
 
 def main():
 
-    # snap = Snap("test3@gmail.com", "12345677", "12345")
-    # snap.login()
+    snap = Snap("test3@gmail.com", "12345677", "12345")
+    snap.login()
+    snap.get_snap_info_after_login({})
     # snap.get_snap_info_after_login({"home=snap_id": '7623'})
     # query = {
     #     "filter": "",
