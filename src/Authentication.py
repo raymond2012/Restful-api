@@ -7,7 +7,7 @@ class Authentication:
         self.__email = email
         self.__password = password
         self.__get_device_id = dev_id
-        self.__base_url = "http://api-dev.dress-as.com:4460/"
+        self.__base_url = "https://api-uat.dress-as.com:4460/vers/v1/"
         self.__auth_url = self.__base_url + "users/"
         self.__token = ""
         self.__id = ""

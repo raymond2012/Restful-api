@@ -1,4 +1,5 @@
 import base64
+import datetime
 import imghdr
 import json
 import urllib
@@ -212,12 +213,8 @@ class User(Snap, Miscellaneous):
         return encoded_string
 
 def main():
-    query_get_snap_after_login = dict(home=dict(snap_id='7112', offset_id='7806', limit="14", order="DESC",
-                                                orderby="creation"),
-                                      search=dict(snap_id='7744', limit='14', order='DESC', orderby='creation'),
-                                      product=dict(snap_id_product='8',offset_id="", limit="12"))
-    query = {key: val for key, val in query_get_snap_after_login.items() if key == 'home' or key == 'product'}
-    User().get_snap_info_after_login(query)
+    for i in range(200):
+        print("test" + datetime.datetime.now().strftime("%Y%m%d%H%M%S_%f"))
     # user = User("test3@gmail.com", "12345678", "12234")
     # user.login()
     # user.add_snap_to_favourite('7584')

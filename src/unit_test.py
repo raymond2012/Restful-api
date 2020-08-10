@@ -4,11 +4,13 @@ import json
 import unittest
 import time
 
+import pytest
+
 from src.User import User
 
 
 def test_login_status_code_200():
-    user = User("test2@gmail.com", "12345678", "12345")
+    user = User("test3@gmail.com", "12345677", "12345")
     result_login = user.login()
     assert result_login.status_code == 200, "Expected status code is 200 but the status code is " + str(
         result_login.status_code)
@@ -113,7 +115,7 @@ def test_register_status_code_400_by_existing_email():
 class unit_api_testing(unittest.TestCase):
     def setUp(self) -> None:
         super().__init__()
-        self.user = User("test2@gmail.com", "12345678", "12345")
+        self.user = User("test" + datetime.datetime.now() + "@gmail.com", "12345678", "12345")
         self.user2 = User("test3@gmail.com", "12345678", "12345")
         self.user.login()
         self.user2.login()
@@ -143,13 +145,12 @@ class unit_api_testing(unittest.TestCase):
                                                search=dict(snap_id='7744', limit='14', order='DESC', orderby='creation'),
                                                product=dict(snap_id_product='8', offset_id="", limit="12"))
 
-    @staticmethod
-    def register_a_new_account():
-        user = User(datetime.datetime.now() + "@gmail.com", "12345678", '12345')
-        result_register = user.register()
+    @pytest.fixture(scope="class", autouse=True)
+    def register_a_new_account(self):
+        self.user = User(datetime.datetime.now() + "@gmail.com", "12345678", '12345')
+        result_register = self.user.register()
         assert result_register.status_code == 200, "Expected status code is 201 but the status code is " + str(
             result_register.status_code)
-        return user
 
     # Set Delay time among unit test
     def tearDown(self) -> None:
