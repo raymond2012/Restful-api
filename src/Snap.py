@@ -69,11 +69,11 @@ class Snap(Authentication):
             if r.status_code == 200:
                 result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))['products']))
                 result_list_snap_product_id = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))['products']))
-                return {"response": r, "list_snap_id": result_list_snap_id, "list_product_id": result_list_snap_product_id}
+                return {"response": r, "list_snap_id": result_list_snap_id, "list_snap_product_id": result_list_snap_product_id}
             else:
-                return {"response": r, "list_snap_id": [], "list_product_id": []}
+                return {"response": r, "list_snap_id": [], "list_snap_product_id": []}
 
-    def search_snaps(self, query_dict):
+    def search_snaps(self, query_dict={}):
         # print("Search Snaps")
         # URL: ```/snaps/search?q={keyword}&offset={offset}&offset_id={offset_id}&limit={limit}&order={ASC|DESC}&orderby={creation|popularity}```
         if query_dict is not dict:
@@ -83,9 +83,10 @@ class Snap(Authentication):
             # self.print_result("search_snaps", r.status_code, r.content)
             if r.status_code == 200:
                 result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
-                return {"response": r, "list_snap_id": result_list_snap_id}
+                result_list_product_id = list(map(lambda x: x["product_id"], json.loads(r.content.decode('utf-8'))))
+                return {"response": r, "list_snap_id": result_list_snap_id, "list_product_id": result_list_product_id}
             else:
-                return {"response": r, "list_snap_id": []}
+                return {"response": r, "list_snap_id": [], "list_product_id": []}
 
     def get_snap_comment(self, snap_id, query_dict={}):
         # print("Get Commment of a Snap")
@@ -145,9 +146,9 @@ class Snap(Authentication):
 
 def main():
 
-    snap = Snap("test3@gmail.com", "12345677", "12345")
-    snap.login()
-    snap.get_snap_info_after_login({})
+    # snap = Snap("test3@gmail.com", "12345677", "12345")
+    # snap.login()
+    # snap.get_snap_info_after_login({})
     # snap.get_snap_info_after_login({"home=snap_id": '7623'})
     # query = {
     #     "filter": "",

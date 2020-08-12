@@ -1,6 +1,3 @@
-import base64
-import datetime
-import imghdr
 import json
 import urllib
 
@@ -16,6 +13,7 @@ def check_token(func):
             raise ValueError
         else:
             return func(self, *args, **kwargs)
+
     return inner
 
 
@@ -80,7 +78,7 @@ class User(Snap, Miscellaneous):
         self.print_result("get_follower", r.status_code, r.content)
         return r
 
-    def get_following(self,user_id):
+    def get_following(self, user_id):
         # print("Get Following")
         url = self.user_url + user_id + "/following"
         print(url)
@@ -133,7 +131,8 @@ class User(Snap, Miscellaneous):
     def get_favourite_products(self, user_id, param_dict={}):
         # print("Get Favourite Products")
         if type(param_dict) is dict:
-            r = requests.get(self.user_url + user_id + "/favourite/product?" + urllib.parse.urlencode(param_dict), headers=self.get_header_auth())
+            r = requests.get(self.user_url + user_id + "/favourite/product?" + urllib.parse.urlencode(param_dict),
+                             headers=self.get_header_auth())
             self.print_result("get_favourite_products", r.status_code, r.content)
             if r.status_code == 200:
                 result_list = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))))
@@ -205,58 +204,3 @@ class User(Snap, Miscellaneous):
         r = requests.get(self.user_url + "following/snaps", headers=self.get_header_auth())
         self.print_result("get_following_users_snaps", r.status_code, r.content)
         return r
-
-    def get_encode_base64_image(self, image_path):
-        with open(image_path, "rb") as image_file:
-            encoded_string = "data:image/" + imghdr.what(image_path) + ";base64," + base64.b64encode(
-                image_file.read()).decode('utf-8')
-        return encoded_string
-
-def main():
-    for i in range(200):
-        print("test" + datetime.datetime.now().strftime("%Y%m%d%H%M%S_%f"))
-    # user = User("test3@gmail.com", "12345678", "12234")
-    # user.login()
-    # user.add_snap_to_favourite('7584')
-    # user.count_user_follower_and_following('5118')
-    # user.get_following_users_snaps()
-    # user.get_following()
-    # user.get_following_user_snap('5117')
-    # user.get_user_profile()
-    # user.get_follower()
-    # user.get_following(user.get_user_id())
-    # result = user.get_snaps({'order': 'abc'})
-    # print(result['response'].status_code)
-    # user.follow_user("5118")
-    # user.unfollow_user(user.get_user_id()"5117")
-    # user.get_favourite_snaps()
-    # user.get_user_profile()
-    # user.get_follower()
-    # auth = Authentication('test4@gmail.com', "12345677", "12235")
-    # auth.register("Hong Kong")
-    # result = login("test3@gmail.com", "12345677", "12345")
-
-    # update_user_profile(id, token, {"firstname": "HO", "lastname": "Raymond"})
-    # get_user_profile(id)
-    # user = User("test3@gmail.com", "12345677", "12345")
-    # user.get_following_user_snap('5117')
-    # user.get_following_user_snap("5117")
-    # follow_user('5116', id, token)
-    # unfollow_user('5116', id, token)
-    # get_following(id, token)
-    # login("", "12345677", "12345")
-    # login("test3@gmail.com", "", "12345")
-    # login("test3@gmail.com", "12345677", "")
-    # login("", "", "12345")
-    # login("test3@gmail.com", "", "")
-    # login("", "12345677", "")
-    # login("test@gmail.com", "12345677", "12345")
-    # login("test3@gmail.com", "1234567", "12345")
-
-    # change_password(token, '12345678', '12345677')
-    # logout(token)
-    # register("test3@gmail.com", "12345678", "12345", "Hong Kong")
-    pass
-
-
-main()

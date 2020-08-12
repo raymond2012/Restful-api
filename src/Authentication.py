@@ -4,6 +4,7 @@ import json
 
 class Authentication:
     def __init__(self, email, password, dev_id):
+        self.get_token = None
         self.__email = email
         self.__password = password
         self.__get_device_id = dev_id
@@ -17,7 +18,7 @@ class Authentication:
         data_get = {'device_id': self.get_device_id,
                     'email': self.__email,
                     'password': self.__password}
-        r = requests.Session().post(self.__auth_url + "/login", data=data_get)
+        r = requests.Session().post(self.__auth_url + "login", data=data_get)
         self.print_result("login", r.status_code, r.content)
         if r.status_code == 200:
             result = json.loads(r.content.decode('utf-8'))
@@ -37,10 +38,8 @@ class Authentication:
 
     def logout(self):
         # print("Logout")
-        headers_get = {'Authorization': "bearer " + self.get_token()}
+        headers_get = self.get_header_auth_json()
         r = requests.post(self.__auth_url + "logout", headers=headers_get)
-        if r.status_code == 200:
-            self.get_token = None
         self.print_result("logout", r.status_code, r.content)
         return r
 
@@ -52,7 +51,10 @@ class Authentication:
         self.print_result("signin_with_google", r.status_code, r.content)
 
     def get_token(self):
-        return str(self.__token) if self.__token is not None else None
+        return str(self.__token) if self.__token is not None else ""
+
+    def set_token(self, token):
+        self.__token = token
 
     def get_header_auth(self):
         return {"Authorization": "Bearer " + self.__token} if self.__token is not None else {"Authorization": "Bearer "}
@@ -68,6 +70,9 @@ class Authentication:
 
     def get_email(self):
         return self.__email if self.__email is not None else None
+
+    def get_password(self):
+        return self.__password if self.__password is not None else None
 
     def get_username(self):
         return self.__email.split("@")[0] if self.__email is not None else None
