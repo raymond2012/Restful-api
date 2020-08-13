@@ -1,9 +1,9 @@
 import requests
-
+import constant as con
 
 class Miscellaneous:
     def __init__(self):
-        self.base_url = "http://api-dev.dress-as.com:4460"
+        self.base_url = con.BASE_URL
 
     def get_privacy_policy(self):
         print("Get Privacy Policy")

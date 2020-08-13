@@ -38,33 +38,6 @@ class complex_test(unittest.TestCase):
         assert result_logout_json['token'] is None
         self.user.login()
 
-    def test_get_snap_checking_order_by_creation(self):
-        # Define 1 query with limit 40 order by creation in descending
-        query_full = {"filter": "", "offset": "", "offset_id": "", "limit": "40", "order": "DESC",
-                      "orderby": "creation"}
-        # Define 4 queries with limit 10 order by creation in descending
-        query_first = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
-                       "orderby": "creation"}
-        query_second = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
-                        "orderby": "creation"}
-        query_third = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
-                       "orderby": "creation"}
-        query_last = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
-                      "orderby": "creation"}
-        # Get 40 snaps and check the status is 200
-        result_full = self.user.get_snaps(query_full)
-        assert result_full['response'].status_code == 200, "Expected Status code is 200 but the status code is " + str(
-            self.login.status_code)
-        result_full_list = self.user.get_snaps(query_full)['list_snap_id']
-        # The offset_id will be defined with the 0th, 10th, 20th and 30th items from the above query
-        query_second['offset_id'] = result_full_list[int(len(result_full_list) / 4 - 1)]
-        query_third['offset_id'] = result_full_list[int(len(result_full_list) / 2 - 1)]
-        query_last['offset_id'] = result_full_list[int(len(result_full_list) * 3 / 4 - 1)]
-        # Combine the 4 queries result in one list
-        result_list_combine = self.user.get_snaps(query_first)['list_snap_id'] + self.user.get_snaps(query_second)['list_snap_id'] + self.user.get_snaps(query_third)['list_snap_id'] + self.user.get_snaps(query_last)['list_snap_id']
-        # Compare the results from two types of query are the same
-        assert result_full_list == result_list_combine, "The results are not the same. Full Result with limit 40: " + result_full_list + ". Full Result of 4 queries with limit 10: " + result_list_combine
-
     def test_create_snap(self):
         # Create a snap with image body
         snap_cre = [{
@@ -327,7 +300,7 @@ class complex_test(unittest.TestCase):
         assert int(snap_product_id) in result_get_fav_prod[
             'snap_product_id_list'], "The snap product is added to favourite unsuccessfully"
         # Delete the favourite snap
-        result_remove_fav = self.user.remove_snap_product_to_favourite(self.user.get_user_id(), snap_product_id)
+        result_remove_fav = self.user.remove_snap_product_from_favourite(self.user.get_user_id(), snap_product_id)
         assert result_remove_fav.status_code == 204
         # Get the favourite product again to check the profile deleted or not
         result_get_fav_prod_again = self.user.get_favourite_products(self.user.get_user_id())

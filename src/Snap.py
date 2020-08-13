@@ -4,6 +4,7 @@ import urllib
 import requests
 
 from src.Authentication import Authentication
+import constant as con
 
 
 def check_token(func):
@@ -20,8 +21,8 @@ class Snap(Authentication):
 
     def __init__(self, email="", password="", dev_id=""):
         Authentication.__init__(self, email, password, dev_id)
-        self.gcs_products_url = self.get_base_url() + "gcsproducts"
-        self.snaps_url = self.get_base_url() + "snaps"
+        self.gcs_products_url = con.GCSPRODUCT_URL
+        self.snaps_url = con.SNAP_URL
 
     def get_snaps(self, param_dict={}):
         # print("Get Snaps")
@@ -29,7 +30,7 @@ class Snap(Authentication):
         if type(param_dict) is dict:
             url_param = urllib.parse.urlencode(param_dict)
             r = requests.get(self.snaps_url + "?" + url_param, headers=self.get_header_auth())
-            self.print_result("get_snaps", r.status_code, r.content)
+            # self.print_result("get_snaps", r.status_code, r.content)
             if r.status_code == 200:
                 result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
                 return {"response": r, "list_snap_id": result_list}
@@ -38,16 +39,17 @@ class Snap(Authentication):
 
     def get_single_snap(self, snap_id):
         # print("Get Single Snap")
-        r = requests.get(self.snaps_url + "/" + snap_id, headers=self.get_header_auth())
-        self.print_result("get_single_snap", r.status_code, r.content)
+        url = self.snaps_url + "/" + snap_id
+        print(url)
+        r = requests.get(url, headers=self.get_header_auth())
+        self.print_result("get_single_snap", r.status_code)
         return r
 
-    def create_snaps(self, query_dict):
+    def create_snaps(self, query_list):
         # print("Create Snaps")
         data_get = {
-            "snaps": query_dict
+            "snaps": query_list
         }
-        print(self.get_header_auth_json())
         r = requests.post(self.snaps_url, headers=self.get_header_auth_json(), data=json.dumps(data_get))
         self.print_result("create_snaps", r.status_code, r.content)
         return r
@@ -65,7 +67,7 @@ class Snap(Authentication):
         print(url)
         if type(query_dict) is dict:
             r = requests.get(url, headers=self.get_header_auth())
-            self.print_result("get_snap_products", r.status_code, r.content)
+            # self.print_result("get_snap_products", r.status_code, r.content)
             if r.status_code == 200:
                 result_list_snap_id = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))['products']))
                 result_list_snap_product_id = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))['products']))
@@ -135,7 +137,6 @@ class Snap(Authentication):
         # URL: ```/snaps/product/{snap_product_id}/relatedsnaps?offset={offset}&offset_id={offset_id}&limit={limit}&order={ASC|DESC}&orderby={creation|popularity}```
         if type(query_dict) is dict:
             url = self.snaps_url + "/product/" + snap_product_id + "/relatedsnaps?" + urllib.parse.urlencode(query_dict)
-            print(url)
             r = requests.get(url, headers=self.get_header_auth())
             self.print_result("get_snap_info_after_login", r.status_code, r.content)
             return r
@@ -144,58 +145,4 @@ class Snap(Authentication):
     def dict_query_to_string(param_dict={}):
         return ",".join([f'{key}:{value}' for key, value in param_dict.items() if value])
 
-def main():
 
-    # snap = Snap("test3@gmail.com", "12345677", "12345")
-    # snap.login()
-    # snap.get_snap_info_after_login({})
-    # snap.get_snap_info_after_login({"home=snap_id": '7623'})
-    # query = {
-    #     "filter": "",
-    #     "offset": "",
-    #     "offset_id": "",
-    #     "limit": "5",
-    #     "order": "DESC",
-    #     "orderby": "creation"
-    # }
-    # query2 = {
-    #     "filter": "",
-    #     "offset": "",
-    #     "offset_id": "7516",
-    #     "limit": "5",
-    #     "order": "DESC",
-    #     "orderby": "creation"
-    # }
-    # query3 = {
-    #     "filter": "",
-    #     "offset": "",
-    #     "offset_id": "",
-    #     "limit": "10",
-    #     "order": "DESC",
-    #     "orderby": "creation"
-    # }
-    # Snap().get_snaps(query)
-    # snap.get_single_snap("7623")
-
-    # with open(image_path, "rb") as image_file:
-    #     encoded_string = "data:img/" + imghdr.what(image_path) + ";base64," + base64.b64encode(image_file.read()).decode('utf-8')
-    # print(encoded_string)
-    # print(encoded_string.decode('utf-8'))
-    # snap_cre = [{
-    #     "title": "Logo",
-    #     "description": "python Logo",
-    #     "image_name": "python",
-    #     "image_body": encoded_string,
-    #     "ref_id": "12345"
-    # }]
-    # snap.create_snaps(snap_cre)
-
-    # snap.get_snaps()
-    # search_query = {"search": "A", "filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
-    #                 "orderby": "creation"}
-    # result = snap.search_snaps(search_query)
-    # print(list(map(lambda x: x['snap_id'], json.loads(result.content.decode('utf-8')))))
-    pass
-
-
-main()

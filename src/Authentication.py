@@ -1,5 +1,6 @@
 import requests
 import json
+import constant as con
 
 
 class Authentication:
@@ -8,8 +9,7 @@ class Authentication:
         self.__email = email
         self.__password = password
         self.__get_device_id = dev_id
-        self.__base_url = "https://api-uat.dress-as.com:4460/vers/v1/"
-        self.__auth_url = self.__base_url + "users/"
+        self.__auth_url = con.USER_URL
         self.__token = ""
         self.__id = ""
 
@@ -60,7 +60,9 @@ class Authentication:
         return {"Authorization": "Bearer " + self.__token} if self.__token is not None else {"Authorization": "Bearer "}
 
     def get_header_auth_json(self):
-        return {"Authorization": "Bearer " + self.__token, "Content-Type": "application/json"} if self.__token is not None else {"Authorization": "Bearer ", "Content-Type": "application/json"}
+        return {"Authorization": "Bearer " + self.__token,
+                "Content-Type": "application/json"} if self.__token is not None else {"Authorization": "Bearer ",
+                                                                                      "Content-Type": "application/json"}
 
     def get_user_id(self):
         return str(self.__id) if self.__id is not None else None
@@ -86,9 +88,12 @@ class Authentication:
     #     print(x.get_token())
     #     print(x.get_user_id())
     @staticmethod
-    def print_result(fun_name, status_code, content):
+    def print_result(fun_name, status_code, content=None):
         try:
-            result = json.loads(content.decode('utf-8'))
+            if content is None:
+                result = ""
+            else:
+                result = json.loads(content.decode('utf-8'))
         except ValueError:
             # print("Unexpected error:", sys.exc_info()[0])
             result = content.decode('utf-8')

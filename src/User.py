@@ -5,6 +5,7 @@ import requests
 
 from src.Miscellaneous import Miscellaneous
 from src.Snap import Snap
+import constant as con
 
 
 def check_token(func):
@@ -22,7 +23,7 @@ class User(Snap, Miscellaneous):
     def __init__(self, email="", password="", dev_id=""):
         Snap.__init__(self, email, password, dev_id)
         Miscellaneous.__init__(self)
-        self.user_url = self.get_base_url() + "users/"
+        self.user_url = con.USER_URL
 
     ###Users###
     def get_user(self, user_id):
@@ -81,7 +82,6 @@ class User(Snap, Miscellaneous):
     def get_following(self, user_id):
         # print("Get Following")
         url = self.user_url + user_id + "/following"
-        print(url)
         r = requests.get(url, headers=self.get_header_auth())
         self.print_result("get_following", r.status_code, r.content)
         return r
@@ -89,7 +89,6 @@ class User(Snap, Miscellaneous):
     def follow_user(self, user_id, target_user_id):
         # print("Follow a User")
         url = self.user_url + user_id + "/follow/" + target_user_id
-        print(url)
         r = requests.post(url, headers=self.get_header_auth())
         self.print_result("follow_user", r.status_code, r.content)
         return r
@@ -116,7 +115,6 @@ class User(Snap, Miscellaneous):
     def add_snap_to_favourite(self, user_id, snap_id):
         # print("Add a Snap to Favourite")
         url = self.user_url + user_id + "/favourite/snap/" + snap_id
-        print(url)
         r = requests.post(url, headers=self.get_header_auth())
         self.print_result("add_snap_to_favourite", r.status_code, r.content)
         return r
@@ -146,10 +144,10 @@ class User(Snap, Miscellaneous):
         self.print_result("add_snap_product_to_favourite", r.status_code, r.content)
         return r
 
-    def remove_snap_product_to_favourite(self, user_id, prod_id):
-        # print("Add a Product to Favourite")
+    def remove_snap_product_from_favourite(self, user_id, prod_id):
+        # print("Remove a Product to Favourite")
         r = requests.delete(self.user_url + user_id + "/favourite/product/" + prod_id, headers=self.get_header_auth())
-        self.print_result("remove_snap_product_to_favourite", r.status_code, r.content)
+        self.print_result("remove_snap_product_from_favourite", r.status_code, r.content)
         return r
 
     def get_user_snaps_of_a_user(self, user_id, param_dict={}):
@@ -204,3 +202,35 @@ class User(Snap, Miscellaneous):
         r = requests.get(self.user_url + "following/snaps", headers=self.get_header_auth())
         self.print_result("get_following_users_snaps", r.status_code, r.content)
         return r
+
+
+def main():
+    # user = User('productsadmin@gmail.com', '12345678', '12345')
+    # user.login()
+    # # user.create_snaps(con.get_snap_created_list(1))
+    # user.remove_snap('7861')
+    # print(con.fav_snap_product_id_list)
+    # admin_product = User(con.admin_product['email'], con.admin_product['password'], con.admin_product['device_id'])
+    # admin_product.login()
+    # # print(con.get_snap_created_with_snap_products())
+    # result_create_snap = admin_product.create_snaps(con.get_snap_created_with_snap_products())
+    # result_content = json.loads(result_create_snap.content.decode('utf-8'))
+    # print(result_content)
+
+
+    user = User('test3@gmail.com', 'testing9999', '12345')
+    user.login()
+    user.change_password('testing9999', '12345677', user.get_user_id())
+    user.logout()
+    # admin_product = User(con.admin_product['email'], con.admin_product['password'], con.admin_product['device_id'])
+    # admin_product.login()
+    # # admin_product.create_snaps(con.get_snap_created_with_snap_products())
+    # user.get_snaps_by_snap_product_id('7166')
+    # user.create_snaps(con.get_snap_created_list(1))
+    # user.add_snap_product_to_favourite(user.get_user_id(), '150')
+    # user.get_favourite_products(user.get_user_id())
+    # user.remove_snap_from_favourite(user.get_user_id(), '150')
+    pass
+
+
+main()

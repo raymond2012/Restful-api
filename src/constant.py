@@ -5,15 +5,33 @@ import imghdr
 import json
 import random
 
+# Url
+BASE_URL = "https://api-uat.dress-as.com:4460/vers/v1/"
+SNAP_URL = BASE_URL + "snaps"
+USER_URL = BASE_URL + "users/"
+GCSPRODUCT_URL = BASE_URL + "gcsproducts"
+
 # Status Code
+OK_CODE = 200
+CREATED_CODE = 201
+NO_CONTENT_CODE = 204
+BAD_REQUEST_CODE = 400
 UNAUTHORIZED_CODE = 401
 NOT_LOGIN_CODE = 401
 NOT_FOUND_CODE = 404
+PAYLOAD_TOO_BIG_CODE = 413
+INTERNAL_SERVER_ERR_CODE = 500
 
 # Status Code Message
+OK_CODE_MESSAGE = "Expected Status code: " + str(OK_CODE) + " but the status code: "
+CREATED_CODE_MESSAGE = "Expected Status code: " + str(CREATED_CODE) + " but the status code: "
+NO_CONTENT_CODE_MESSAGE = "Expected Status code: " + str(NO_CONTENT_CODE) + " but the status code: "
+BAD_REQUEST_CODE_MESSAGE = "Expected Status code: " + str(BAD_REQUEST_CODE) + " but the status code: "
 UNAUTHORIZED_CODE_MESSAGE = "Expected Status code: " + str(UNAUTHORIZED_CODE) + " but the status code: "
 NOT_LOGIN_CODE_MESSAGE = "Expected Status code: " + str(NOT_LOGIN_CODE) + " but the status code: "
 NOT_FOUND_CODE_MESSAGE = "Expected Status code: " + str(NOT_FOUND_CODE) + " but the status code: "
+PAYLOAD_TOO_BIG_CODE_MESSAGE = "Expected Status code: " + str(PAYLOAD_TOO_BIG_CODE) + " but the status code: "
+INTERNAL_SERVER_ERR_CODE_MESSAGE = "Expected Status code: " + str(INTERNAL_SERVER_ERR_CODE) + " but the status code: "
 
 # Error Code
 UNAUTHORIZED_ERROR_CODE = "UNAUTHORIZED"
@@ -25,6 +43,9 @@ UNAUTHORIZED_ERROR_MESSAGE = "Expected Error code is " + UNAUTHORIZED_ERROR_CODE
 NOT_LOGIN_ERROR_MESSAGE = "Expected Error code is " + NOT_LOGIN_ERROR_CODE + " but the error code is "
 NOT_FOUND_ERROR_MESSAGE = "Expected Error code is " + NOT_FOUND_ERROR_CODE + " but the error code is "
 
+# Datetime String
+date = datetime.datetime.now().strftime("%m%d%H%M%S")
+
 
 def get_encode_base64_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -35,18 +56,48 @@ def get_encode_base64_image(image_path):
 
 def get_snap_created_list(num=1):
     snap_list = list()
-    snap_image_list = random.sample(image_path_list_code_200, num + 1)
+    snap_image_list = random.sample(image_path_testing_snap_create, num)
     print(snap_image_list)
     for i in range(1, num + 1):
         snap_item = {
             "title": "Test-Title-" + str(i),
             "description": "Test-Description-" + str(i),
             "image_name": "Image-" + str(i),
-            "image_body": get_encode_base64_image(snap_image_list[i]),
+            "image_body": get_encode_base64_image(snap_image_list[i - 1]),
             "ref_id": str(i)
         }
         snap_list.append(snap_item)
     return snap_list
+
+
+def get_snap_created_with_snap_products():
+    snap_image = image_path_testing_product_create[0]
+    snap_item = [{
+        "title": "Test-Title-" + date,
+        "description": "Test-Description-" + date,
+        "image_name": "Image-" + date,
+        "image_body": get_encode_base64_image(snap_image),
+        "ref_id": "1"
+    }]
+    return snap_item
+
+
+def check_status_code_200(result):
+    assert result.status_code == OK_CODE, OK_CODE_MESSAGE + str(result.status_code)
+
+
+def check_status_code_201(result):
+    assert result.status_code == CREATED_CODE, CREATED_CODE_MESSAGE + str(result.status_code)
+
+
+def check_status_code_204(result):
+    assert result.status_code == NO_CONTENT_CODE, NO_CONTENT_CODE_MESSAGE + str(result.status_code)
+
+
+def check_status_code_400_BAD_REQUEST(result, code):
+    assert result.status_code == BAD_REQUEST_CODE, BAD_REQUEST_CODE_MESSAGE + str(result.status_code)
+    error_code = json.loads(result.content.decode('utf-8'))['error']['code']
+    assert error_code == code, "Expected Error code is " + code + " but the error code is " + error_code
 
 
 def check_status_code_401_NOT_LOGIN(result):
@@ -67,29 +118,70 @@ def check_status_code_404_NOT_FOUND(result):
     assert error_code == NOT_FOUND_ERROR_CODE, NOT_FOUND_ERROR_MESSAGE + error_code
 
 
+def check_status_code_413_PAYLOAD_TOO_BIG(result, code):
+    assert result.status_code == PAYLOAD_TOO_BIG_CODE, PAYLOAD_TOO_BIG_CODE_MESSAGE + str(result.status_code)
+    error_code = json.loads(result.content.decode('utf-8'))['error']['code']
+    assert error_code == code, "Expected Error code is " + code + " but the error code is " + error_code
+
+
+def check_status_code_500_SERVER_ERROR(result, code):
+    assert result.status_code == INTERNAL_SERVER_ERR_CODE, INTERNAL_SERVER_ERR_CODE_MESSAGE + str(result.status_code)
+    error_code = json.loads(result.content.decode('utf-8'))['error']['code']
+    assert error_code == code, "Expected Error code is " + code + " but the error code is " + error_code
+
+
+def check_two_result_are_the_same(expect, actual):
+    assert expect == actual, "The expected result is %s but the actual result is %s" % (expect, actual)
+
+
 # General
 unauthorized_user_id = '5108'
-testing_email = "test" + datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com"
+testing_email = "test" + date + "@gmail.com"
 testing_password = "testing1234"
 testing_device_id = '12345'
+missing_variable = ""
+missing_url_variable = " "
 
 # Login
-invalid_email_list = ['test8rtyuhygfd765403', '#!@1132']
-unexist_email = "unexist" + datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com"
+existing_user_login = dict(email='test3@gmail.com', password='12345677')
+invalid_email_login_list = ['test8rtyuhygfd765403', '#!@1132']
+unexisting_email_login = "unexisting" + date + "@gmail.com"
+invalid_password_login_list = ['12345', 'abcde']
+missing_email_login = ""
+missing_password_login = ""
+
+# Register
+location_register = "Hong Kong"
+invalid_email_register_list = ['test8rtyuhygfd765403', '#!@1132']
+missing_email_register = ""
+missing_password_register = ""
 
 # Get Snap
 query_get_snap = {"filter": "", "offset": "", "offset_id": "", "limit": "40", "order": "DESC",
                   "orderby": "creation"}
 query_get_snap_invalid_param = {"order": "abc"}
+missing_snap_id_get_snap = ''
+query_full = {"filter": "", "offset": "", "offset_id": "", "limit": "40", "order": "DESC",
+              "orderby": "creation"}
+query_first = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
+               "orderby": "creation"}
+query_second = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
+                "orderby": "creation"}
+query_third = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
+               "orderby": "creation"}
+query_last = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
+              "orderby": "creation"}
 
 # Image Path for Creating Snap
 image_path_list_code_413 = glob.glob('img/testing_image_status_code_413/*.jpg')
 image_path_list_code_400 = glob.glob('img/testing_image_status_code_400/*.jpg')
-image_path_list_code_200 = glob.glob('img/testing_snap_image/*.jpg')
+image_path_testing_snap_create = glob.glob('img/testing_snap_image/*.jpg')
+image_path_testing_product_create = glob.glob('img/testing_product_image/*.jpg')
 
 # Remove Snap
 missing_snap_id_remove_snap = " "
-unexisting_snap_id_remove_snap_list = ['abc', '12345678']
+unexisting_snap_id_remove_snap_list = ['12345678', '98765432']
+invalid_snap_id_remove_snap_list = ['abc', '@#$']
 
 # Get Product of a Snap
 snap_id_get_product_snap = '7112'
@@ -105,7 +197,7 @@ snap_id_get_comments = '7112'
 invalid_snap_id_get_comments_list = [" ", "abc"]
 
 # Post Comments
-comment = "Unit Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
+comment = "Unit Testing" + date
 missing_comment = ""
 snap_id_post_comment = "7112"
 invalid_snap_id_post_comment_list = [" ", "abc"]
@@ -129,8 +221,8 @@ missing_snap_product_id_get_snap_product = " "
 
 # Change Password
 new_password = 'testing9999'
-missing_password = ''
-invalid_password_list = ['1234']
+missing_password_change = ''
+invalid_password_change_list = ['1234', 'abcd']
 
 # Get User Status
 user_id_get_user_list = ['5112', '5113', '5114']
@@ -146,7 +238,7 @@ invalid_user_id_query_profile_list = [" ", "2134567"]
 # Update User Profile Picture
 image_name_profile_pic = 'Testing'
 missing_image_name_profile_pic = ''
-image_body_profile_pic = get_encode_base64_image(random.sample(image_path_list_code_200, 1)[0])
+image_body_profile_pic = get_encode_base64_image(random.sample(image_path_testing_snap_create, 1)[0])
 image_body_profile_pic_code_400 = get_encode_base64_image(random.sample(image_path_list_code_400, 1)[0])
 image_body_profile_pic_code_413 = get_encode_base64_image(random.sample(image_path_list_code_413, 1)[0])
 missing_image_body_profile_pic = ""
@@ -156,7 +248,7 @@ invalid_image_body_profile_pic_list = ["12345678", 'abc', '#$%^&']
 invalid_user_id_remove_profile_pic_list = [' ', '123455']
 
 # Follower and Following (Add/Get/Remove)
-follow_target_email = 'follower' + datetime.datetime.now().strftime("%m%d%H%M%S") + "@gmail.com"
+follow_target_email = 'follower' + date + "@gmail.com"
 follow_target_password = 'follow1234'
 follow_target_device_id = '24680'
 invalid_target_user_id_list = ['', '123456789']
@@ -164,10 +256,13 @@ invalid_user_id_get_follower_list = [' ', '12345678']
 invalid_user_id_get_following_list = [' ', '12345678']
 
 # Favourite Snap (Add/Get/Remove)
+fav_snap_id_add_before_testing = '6665'
 invalid_snap_id_fav_snap_list = ['1234567', ' ', 'abc']
 
 # Favourite Product (Add/Get/Remove)
-fav_snap_id = '34'
+admin_product = dict(email='productsadmin@gmail.com', password='12345678', device_id="11111")
+fav_snap_product_id_add_before_testing = '150'
+fav_snap_product_id_list = [str(elem) for elem in range(201, 211)]
 invalid_user_id_get_fav_product_list = [unauthorized_user_id, ' ', '12345678']
 invalid_snap_id_add_fav_snap_product_list = ['1234567', ' ', 'abc']
 invalid_snap_id_remove_fav_snap_product_list = ['1234567', ' ', 'abc']
@@ -178,19 +273,19 @@ invalid_snap_id_get_user_snap_list = [' ', '12234567']
 invalid_query_get_user_snap = [{'order': 'abc'}]
 
 # Forget Password
-missing_email_forget_pass = ''
 invalid_email_forget_pass = ['12345@fdvbvdsfrte5rf', 'abc', '2$%^&*(']
 
 # Report User
 report_user_param = dict(user_id="5112", report_type="1", remark="")
-missing_report_type = " "
+report_user_report_type_param = dict(user_id="5112", report_type="", remark="")
+report_user_user_id_param = dict(user_id="", report_type="1", remark="")
 invalid_report_type_list = ['123', 'abc', '#$%', ' ']
-missing_user_id = " "
-invalid_user_id_list = ['abc', '456787654', '%^&*']
+invalid_user_id_list = ['abc', '456787654']
 
 # Check Username valid
 unexisting_username_list = ['qwertyuio', 'br4567ujb', '098765tgb']
 invalid_username_list = ['@#$', 'dsfhj@gmai.com', '3435!$#']
+
 
 def main():
     print(image_body_profile_pic)
