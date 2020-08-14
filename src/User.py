@@ -7,7 +7,6 @@ from src.Miscellaneous import Miscellaneous
 from src.Snap import Snap
 import constant as con
 
-
 def check_token(func):
     def inner(self, *args, **kwargs):
         if self.get_token() is None:
@@ -25,7 +24,6 @@ class User(Snap, Miscellaneous):
         Miscellaneous.__init__(self)
         self.user_url = con.USER_URL
 
-    ###Users###
     def get_user(self, user_id):
         # print("Get User Profile")
         r = requests.get(self.user_url + user_id + "/profile")
@@ -105,7 +103,7 @@ class User(Snap, Miscellaneous):
         if type(param_dict) is dict:
             url_param = urllib.parse.urlencode(param_dict)
             r = requests.get(self.user_url + user_id + "/favourite/snap?" + url_param, headers=self.get_header_auth())
-            self.print_result("get_favourite_snaps", r.status_code, r.content)
+            self.print_result("get_favourite_snaps", r.status_code)
             if r.status_code == 200:
                 result_list = list(map(lambda x: x["snap_id"], json.loads(r.content.decode('utf-8'))))
                 return {"response": r, "snap_id_list": result_list}
@@ -131,7 +129,7 @@ class User(Snap, Miscellaneous):
         if type(param_dict) is dict:
             r = requests.get(self.user_url + user_id + "/favourite/product?" + urllib.parse.urlencode(param_dict),
                              headers=self.get_header_auth())
-            self.print_result("get_favourite_products", r.status_code, r.content)
+            self.print_result("get_favourite_products", r.status_code)
             if r.status_code == 200:
                 result_list = list(map(lambda x: x["snap_product_id"], json.loads(r.content.decode('utf-8'))))
                 return {"response": r, "snap_product_id_list": result_list}
@@ -203,34 +201,3 @@ class User(Snap, Miscellaneous):
         self.print_result("get_following_users_snaps", r.status_code, r.content)
         return r
 
-
-def main():
-    # user = User('productsadmin@gmail.com', '12345678', '12345')
-    # user.login()
-    # # user.create_snaps(con.get_snap_created_list(1))
-    # user.remove_snap('7861')
-    # print(con.fav_snap_product_id_list)
-    # admin_product = User(con.admin_product['email'], con.admin_product['password'], con.admin_product['device_id'])
-    # admin_product.login()
-    # # print(con.get_snap_created_with_snap_products())
-    # result_create_snap = admin_product.create_snaps(con.get_snap_created_with_snap_products())
-    # result_content = json.loads(result_create_snap.content.decode('utf-8'))
-    # print(result_content)
-
-
-    user = User('test3@gmail.com', 'testing9999', '12345')
-    user.login()
-    user.change_password('testing9999', '12345677', user.get_user_id())
-    user.logout()
-    # admin_product = User(con.admin_product['email'], con.admin_product['password'], con.admin_product['device_id'])
-    # admin_product.login()
-    # # admin_product.create_snaps(con.get_snap_created_with_snap_products())
-    # user.get_snaps_by_snap_product_id('7166')
-    # user.create_snaps(con.get_snap_created_list(1))
-    # user.add_snap_product_to_favourite(user.get_user_id(), '150')
-    # user.get_favourite_products(user.get_user_id())
-    # user.remove_snap_from_favourite(user.get_user_id(), '150')
-    pass
-
-
-main()

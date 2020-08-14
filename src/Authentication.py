@@ -34,6 +34,10 @@ class Authentication:
                     "location": location}
         r = requests.post(self.__auth_url + "/register", data=data_get)
         self.print_result("register", r.status_code, r.content)
+        if r.status_code == 200:
+            result = json.loads(r.content.decode('utf-8'))
+            self.__token = result['token']
+            self.__id = result['user_id']
         return r
 
     def logout(self):

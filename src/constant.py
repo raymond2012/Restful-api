@@ -46,13 +46,12 @@ NOT_FOUND_ERROR_MESSAGE = "Expected Error code is " + NOT_FOUND_ERROR_CODE + " b
 # Datetime String
 date = datetime.datetime.now().strftime("%m%d%H%M%S")
 
-
+# convert an image file to base64 encoded string
 def get_encode_base64_image(image_path):
     with open(image_path, "rb") as image_file:
         encoded_string = "data:image/" + imghdr.what(image_path) + ";base64," + base64.b64encode(
             image_file.read()).decode('utf-8')
     return encoded_string
-
 
 def get_snap_created_list(num=1):
     snap_list = list()
@@ -130,17 +129,19 @@ def check_status_code_500_SERVER_ERROR(result, code):
     assert error_code == code, "Expected Error code is " + code + " but the error code is " + error_code
 
 
-def check_two_result_are_the_same(expect, actual):
+def check_two_results_are_the_same(expect, actual):
     assert expect == actual, "The expected result is %s but the actual result is %s" % (expect, actual)
 
 
 # General
 unauthorized_user_id = '5108'
+create_snap_user = dict(email="snap" + date + "@gmail.com", password="snap123456", dev_id="13579")
 testing_email = "test" + date + "@gmail.com"
 testing_password = "testing1234"
 testing_device_id = '12345'
 missing_variable = ""
 missing_url_variable = " "
+missing_query = {}
 
 # Login
 existing_user_login = dict(email='test3@gmail.com', password='12345677')
@@ -206,12 +207,11 @@ invalid_snap_id_post_comment_list = [" ", "abc"]
 query_get_snap_after_login = dict(
     home=dict(snap_id='7112', offset_id='7806', limit="14", order="DESC", orderby="creation"),
     search=dict(snap_id='7744', limit='14', order='DESC', orderby='creation'),
-    product=dict(snap_id_product='8', offset_id="", limit="12"))
+    product=dict(snap_product_id='100', offset_id="", limit="12"))
 
 # Remove a Snap Product from a Snap
 snap_product_id_remove_snap_product = '32'
 unexisting_snap_product_id_remove_snap_product = '12345678'
-missing_snap_product_id_remove_snap_product = " "
 
 # Get Snap Product by Snap Product id
 snap_product_id_get_snap_product = '32'
@@ -237,11 +237,9 @@ invalid_user_id_query_profile_list = [" ", "2134567"]
 
 # Update User Profile Picture
 image_name_profile_pic = 'Testing'
-missing_image_name_profile_pic = ''
 image_body_profile_pic = get_encode_base64_image(random.sample(image_path_testing_snap_create, 1)[0])
 image_body_profile_pic_code_400 = get_encode_base64_image(random.sample(image_path_list_code_400, 1)[0])
 image_body_profile_pic_code_413 = get_encode_base64_image(random.sample(image_path_list_code_413, 1)[0])
-missing_image_body_profile_pic = ""
 invalid_image_body_profile_pic_list = ["12345678", 'abc', '#$%^&']
 
 # Remove User Profile Picture
@@ -276,9 +274,9 @@ invalid_query_get_user_snap = [{'order': 'abc'}]
 invalid_email_forget_pass = ['12345@fdvbvdsfrte5rf', 'abc', '2$%^&*(']
 
 # Report User
-report_user_param = dict(user_id="5112", report_type="1", remark="")
-report_user_report_type_param = dict(user_id="5112", report_type="", remark="")
-report_user_user_id_param = dict(user_id="", report_type="1", remark="")
+report_user_param = dict(user_id="5112", report_type="1", remark="testing")
+report_user_report_type_param = dict(user_id="5112", report_type="", remark="testing")
+report_user_user_id_param = dict(user_id="", report_type="1", remark="testing")
 invalid_report_type_list = ['123', 'abc', '#$%', ' ']
 invalid_user_id_list = ['abc', '456787654']
 

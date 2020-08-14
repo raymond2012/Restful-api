@@ -121,7 +121,7 @@ class Snap(Authentication):
         if type(query_dict) is dict:
             home_url = "home=" + self.dict_query_to_string(query_dict['home']) if 'home' in query_dict.keys() is not None else ""
             search_url = "search=" + self.dict_query_to_string(query_dict['search']) if 'search' in query_dict.keys() is not None else ""
-            product_url = "product=q:" + query_dict['product']['snap_id_product'] if 'product' in query_dict.keys() is not None else ""
+            product_url = "product=q:" + query_dict['product']['snap_product_id'] if 'product' in query_dict.keys() is not None else ""
             url = self.snaps_url + "/info-after-login?" + home_url + "&" + search_url + "&" + product_url
             print(url)
             r = requests.get(url, headers=self.get_header_auth())

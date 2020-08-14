@@ -1,6 +1,7 @@
 import requests
 import constant as con
 
+
 class Miscellaneous:
     def __init__(self):
         self.base_url = con.BASE_URL
