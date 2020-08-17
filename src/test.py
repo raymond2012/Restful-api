@@ -22,22 +22,6 @@ class complex_test(unittest.TestCase):
         self.image_path = "img/example_image_10kB.jpg"
 
 
-    def test_login_and_logout(self):
-        # Check the user login request successfully
-        assert self.login.status_code == 200, "Expected Status code is 200 but the status code is " + str(
-            self.login.status_code)
-        # Check the token and user_id are gotten from the login response successfully
-        assert self.login_result['token'] is not None and self.login_result[
-            'user_id'] > 0, "Expected token and user_id exist but they are None"
-        # Logout the user
-        result_logout = self.user.logout()
-        result_logout_json = json.loads(result_logout.content.decode('utf-8'))
-        # Check the logout request successfully and ensure the logout return token is null
-        assert result_logout.status_code == 200, "Expected Status code is 200 but the status code is " + str(
-            self.result_logout.status_code)
-        assert result_logout_json['token'] is None
-        self.user.login()
-
     def test_get_products_of_a_snap(self):
         # Get the products result by the snap_id
         snap_id = '7790'

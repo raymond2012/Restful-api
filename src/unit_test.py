@@ -360,7 +360,8 @@ class Test_comment:
         self.user_create_snap.logout()
 
     def test_get_comments_of_a_snap_status_code_200(self):
-        result_get_comment = self.user.get_snap_comment(self.snap_id_comment)
+        snap_id_get_comment = self.snap_id_comment
+        result_get_comment = self.user.get_snap_comment(snap_id_get_comment)
         con.check_status_code_200(result_get_comment['response'])
 
     def test_get_comments_of_a_snap_status_code_200_by_a_deleted_snap(self, deleted_snap_id_before_comment_testing):
@@ -369,13 +370,19 @@ class Test_comment:
         con.check_status_code_200(result_get_comment['response'])
 
     def test_get_comments_of_a_snap_status_code_404_by_invalid_snap_id(self):
-        for snap_id in con.invalid_snap_id_get_comments_list:
-            result_get_comment = self.user.get_snap_comment(snap_id)
+        for snap_id_get_comment in con.invalid_snap_id_get_comments_list:
+            result_get_comment = self.user.get_snap_comment(snap_id_get_comment)
             con.check_status_code_404_NOT_FOUND(result_get_comment['response'])
 
     def test_post_comment_status_code_201(self):
-        result_post = self.user.post_comment(con.snap_id_post_comment, con.comment)
+        snap_id_post_comment = self.snap_id_comment
+        comment = con.comment
+        result_post = self.user.post_comment(snap_id_post_comment, con.comment)
         con.check_status_code_201(result_post)
+        result_get = self.user.get_snap_comment(snap_id_post_comment)
+        con.check_status_code_200(result_get["response"])
+        comment_get = result_get['json']['comments'][0]['message']
+        con.check_two_results_are_the_same(comment, comment_get)
 
     def test_post_comment_status_code_201_by_a_deleted_snap(self, deleted_snap_id_before_comment_testing):
         snap_id_post_comment = "{}".format(deleted_snap_id_before_comment_testing)
@@ -383,17 +390,19 @@ class Test_comment:
         con.check_status_code_201(result_post)
 
     def test_post_comment_status_code_400_by_missing_comment(self):
-        result_post = self.user.post_comment(con.snap_id_post_comment, con.missing_comment)
+        snap_id_post_comment = self.snap_id_comment
+        result_post = self.user.post_comment(snap_id_post_comment, con.missing_comment)
         con.check_status_code_400_BAD_REQUEST(result_post, "MISSING_MESSAGE")
 
     def test_post_comment_status_code_404_by_invalid_snap_id(self):
-        for snap_id in con.invalid_snap_id_post_comment_list:
-            result_post = self.user.post_comment(snap_id, con.comment)
+        for snap_id_post_comment in con.invalid_snap_id_post_comment_list:
+            result_post = self.user.post_comment(snap_id_post_comment, con.comment)
             con.check_status_code_404_NOT_FOUND(result_post)
 
     def test_post_comment_status_code_401_by_not_login(self):
+        snap_id_post_comment = self.snap_id_comment
         self.user.logout()
-        result_post = self.user.post_comment(con.snap_id_post_comment, con.comment)
+        result_post = self.user.post_comment(snap_id_post_comment, con.comment)
         con.check_status_code_401_NOT_LOGIN(result_post)
 
 
