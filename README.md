@@ -32,4 +32,14 @@ This project tests the restful api by checking the status code
 ### Running the pytest with pytest-xdist
 ##### Run the following command in your command line in ../src path with 2 parallel:
     $ pytest -n=2 -v
+    
+### Setting Environment (Pycharm)
+#### Python Integrated Tools
+##### Go to the setting page through *File* or Enter Ctrl+Alt+S 
+![image](https://github.com/raymond2012/Restful-api/blob/master/readme-image/setting.jpg?raw=true)
+##### Edit the setting of Pipenv and Testing shown below
+![image](https://github.com/raymond2012/Restful-api/blob/master/readme-image/python_integrated_tools.jpg?raw=true)
 
+#### Project Structure
+##### Define *src* as a source folder
+![image](https://github.com/raymond2012/Restful-api/blob/master/readme-image/project_structure.jpg?raw=true)
