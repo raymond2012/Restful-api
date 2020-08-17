@@ -74,6 +74,10 @@ class Test_general:
     def test_login_status_code_200(self):
         result_login = self.user.login()
         con.check_status_code_200(result_login)
+        login_content = json.loads(result_login.content.decode('utf-8'))
+        con.check_result_is_not_None(login_content['token'])
+        con.check_result_is_not_None(login_content['user_id'])
+        con.check_two_results_are_the_same("application", login_content['account_type'])
 
     def test_login_status_code_400_by_missing_email(self):
         email = con.missing_variable
@@ -111,6 +115,8 @@ class Test_general:
     def test_logout_status_code_200(self):
         result_logout = self.user.logout()
         con.check_status_code_200(result_logout)
+        logout_content = json.loads(result_logout.content.decode('utf-8'))
+        con.check_two_results_are_the_same(None, logout_content['token'])
 
     def test_logout_status_code_401_by_not_login(self):
         self.user.logout()

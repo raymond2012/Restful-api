@@ -38,32 +38,6 @@ class complex_test(unittest.TestCase):
         assert result_logout_json['token'] is None
         self.user.login()
 
-    def test_create_snap(self):
-        # Create a snap with image body
-        snap_cre = [{
-            "title": "Dress" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S"),
-            "description": "Flowered Dress",
-            "image_name": "Example",
-            "image_body": self.user.get_encode_base64_image(self.image_path),
-            "ref_id": "1"
-        }]
-        result_created = json.loads(self.user.create_snaps(snap_cre).content.decode('utf-8'))
-        # Check the return image path exist
-        assert result_created['results'][0]['image_path'] is not None, "The image path is null"
-        snap_id_testing = str(result_created['results'][0]['snap_id'])
-        # Get a single snap by the snap_id from the created snap result
-        result_get = json.loads(self.user.get_single_snap(snap_id_testing).content.decode('utf-8'))
-        assert result_created['results'][0]['image_path'] == result_get['image_path'], "The image path are not the same"
-        # Get the snap by user id and check the result contains the created snap by snap_id
-        result_get_user_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
-        assert int(snap_id_testing) in result_get_user_snap[
-            'list_user_id'], "The expected created snap id" + snap_id_testing + " is not in the list from get_snap of a user" + \
-                             result_get_user_snap['list_user_id']
-        # Remove the snap and check the remove request successfully
-        result_remove = self.user.remove_snap(snap_id_testing)
-        assert result_remove.status_code == 204, "Expected Status code: 204 but the status code: " + str(
-            result_remove.status_code)
-
     def test_get_products_of_a_snap(self):
         # Get the products result by the snap_id
         snap_id = '7790'
