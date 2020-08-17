@@ -688,6 +688,24 @@ class Test_snap:
         result_get_snap = self.user.get_snap_info_after_login(query)
         con.check_status_code_401_NOT_LOGIN(result_get_snap)
 
+    def test_create_snap(self):
+        # Create a snap with image body
+        snap_cre = con.get_snap_created_list()
+        result_created = json.loads(self.user.create_snaps(snap_cre).content.decode('utf-8'))['results'][0]
+        # Check the return image path exist
+        con.check_result_is_not_None(result_created['image_path'])
+        con.check_result_is_not_None(result_created['snap_id'])
+        snap_id_created = str(result_created['snap_id'])
+        # Get a single snap by the snap_id from the created snap result
+        result_get = json.loads(self.user.get_single_snap(snap_id_created).content.decode('utf-8'))
+        con.check_two_results_are_the_same(result_created['image_path'], result_get['image_path'])
+        # Get the snap by user id and check the result contains the created snap by snap_id
+        result_get_user_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
+        con.check_result_item_in_list(snap_id_created, result_get_user_snap['list_snap_id'])
+        # Remove the snap and check the remove request successfully
+        result_remove = self.user.remove_snap(snap_id_created)
+        con.check_status_code_204(result_remove)
+
 
 class Test_profile:
     def setup_method(self):

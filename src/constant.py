@@ -133,6 +133,14 @@ def check_two_results_are_the_same(expect, actual):
     assert expect == actual, "The expected result is %s but the actual result is %s" % (expect, actual)
 
 
+def check_result_is_not_None(result):
+    assert result is not None, "The type of result is None"
+
+
+def check_result_item_in_list(item, list):
+    assert int(item) in list, "The expected created snap id" + item + " is not in the list from get_snap of a user" + list
+
+
 # General
 unauthorized_user_id = '5108'
 create_snap_user = dict(email="snap" + date + "@gmail.com", password="snap123456", dev_id="13579")
