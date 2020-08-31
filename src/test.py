@@ -73,17 +73,6 @@ class complex_test(unittest.TestCase):
         # Check the number of comment more than 0
         assert int(result_get_comment['json']['n_comment']) > 0, "There is no any comment in this snap"
 
-    def test_snap_comment(self):
-        comment = "Testing" + datetime.datetime.now().strftime("_%Y%m%d-%H%M%S")
-        snap_id = '7796'
-        result_post = self.user.post_comment(snap_id, comment)
-        assert result_post.status_code == 201, "Expected Status code: 201 but the status code: " + str(
-            result_post.status_code)
-        result_get = self.user.get_snap_comment('7796')
-        assert result_get["response"].status_code == 200, "Expected Status code: 200 but the status code: " + str(
-            result_get["response"].status_code)
-        assert result_get['json']['comments'][0]['message'] == comment, "The post comment is not the same with the gotten one"
-
     # def test_collect_product_link_click(self):
     #     body =  {
     #         "snap_product_id": "12345",
@@ -138,27 +127,6 @@ class complex_test(unittest.TestCase):
         assert result_get_profile.status_code == 200, "Expected Status code: 200 but the status code: " + result_get_profile.status_code
         assert json.loads(result_get_profile.content.decode('utf-8'))['user_id'] == self.login_result[
             'user_id'], "The user id do not match"
-
-    def test_change_password(self):
-        # Check new password missing error
-        result_change_new_missing = self.user.change_password('12345678', '', self.user.get_user_id())
-        assert result_change_new_missing.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-            result_change_new_missing.status_code)
-        new_missing_error_code = json.loads(result_change_new_missing.content.decode('utf-8'))['error']['code']
-        assert new_missing_error_code == 'MISSING_NEW_PASSWORD', "Expected Error code: MISSING_NEW_PASSWORD but the code: " + new_missing_error_code
-        # Check current password missing error
-        result_change_curr_missing = self.user.change_password('', '12345678', self.user.get_user_id())
-        assert result_change_curr_missing.status_code == 400, "Expected Status code: 400 but the status code: " + str(
-            result_change_new_missing.status_code)
-        result_change_curr_missing = json.loads(result_change_curr_missing.content.decode('utf-8'))['error']['code']
-        assert result_change_curr_missing == 'MISSING_CURR_PASSWORD', "Expected Error code: MISSING_CURR_PASSWORD but the code: " + result_change_curr_missing
-        # Check the correct change password
-        result_change_diff = self.user.change_password('12345678', '12345677', self.user.get_user_id())
-        assert result_change_diff.status_code == 200, "Expected Status code: 400 but the status code: " + str(
-            result_change_diff.status_code)
-        result_change_diff = self.user.change_password('12345677', '12345678', self.user.get_user_id())
-        assert result_change_diff.status_code == 200, "Expected Status code: 400 but the status code: " + str(
-            result_change_diff.status_code)
 
     def test_user_profile(self):
         profile_update = {

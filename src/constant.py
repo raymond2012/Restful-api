@@ -6,7 +6,7 @@ import json
 import random
 
 # Url
-BASE_URL = "https://api-uat.dress-as.com:4460/vers/v1/"
+BASE_URL = "https://api-uat.dress-as.com:4460/vers/v2/"
 SNAP_URL = BASE_URL + "snaps"
 USER_URL = BASE_URL + "users/"
 GCSPRODUCT_URL = BASE_URL + "gcsproducts"
@@ -16,7 +16,7 @@ OK_CODE = 200
 CREATED_CODE = 201
 NO_CONTENT_CODE = 204
 BAD_REQUEST_CODE = 400
-UNAUTHORIZED_CODE = 401
+UNAUTHORIZED_CODE = 401#Expected 403
 NOT_LOGIN_CODE = 401
 NOT_FOUND_CODE = 404
 PAYLOAD_TOO_BIG_CODE = 413
@@ -56,7 +56,6 @@ def get_encode_base64_image(image_path):
 def get_snap_created_list(num=1):
     snap_list = list()
     snap_image_list = random.sample(image_path_testing_snap_create, num)
-    print(snap_image_list)
     for i in range(1, num + 1):
         snap_item = {
             "title": "Test-Title-" + str(i),
@@ -181,8 +180,11 @@ query_third = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "orde
 query_last = {"filter": "", "offset": "", "offset_id": "", "limit": "10", "order": "DESC",
               "orderby": "creation"}
 
+# Get Single Snap
+unexisting_snap_id_list = ['abc', ' ', '!@$']
+
 # Image Path for Creating Snap
-image_path_list_code_413 = glob.glob('img/testing_image_status_code_413/*.jpg')
+image_path_list_code_413 = glob.glob('img/testing_image_over_10MB/*.jpg')
 image_path_list_code_400 = glob.glob('img/testing_image_status_code_400/*.jpg')
 image_path_testing_snap_create = glob.glob('img/testing_snap_image/*.jpg')
 image_path_testing_product_create = glob.glob('img/testing_product_image/*.jpg')
@@ -257,7 +259,7 @@ invalid_user_id_remove_profile_pic_list = [' ', '123455']
 follow_target_email = 'follower' + date + "@gmail.com"
 follow_target_password = 'follow1234'
 follow_target_device_id = '24680'
-invalid_target_user_id_list = ['', '123456789']
+invalid_target_user_id_list = ['123456789', '987654321']
 invalid_user_id_get_follower_list = [' ', '12345678']
 invalid_user_id_get_following_list = [' ', '12345678']
 
@@ -294,7 +296,7 @@ invalid_username_list = ['@#$', 'dsfhj@gmai.com', '3435!$#']
 
 
 def main():
-    print(image_body_profile_pic)
+    print(get_snap_created_list(2))
 
 
 main()

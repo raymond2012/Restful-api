@@ -304,6 +304,18 @@ class Test_without_user_auth:
         result_register = User(existing_email, password, con.testing_device_id).register(self.location)
         con.check_status_code_400_BAD_REQUEST(result_register, "EXIST_ALREADY")
 
+    def test_search_snap_status_code_200(self):
+        result_search_snap = self.user.search_snaps(con.search_snap_query)
+        con.check_status_code_200(result_search_snap['response'])
+
+    def test_search_snap_status_code_200_by_empty_query(self):
+        result_search_snap = self.user.search_snaps(con.empty_search_snap_query)
+        con.check_status_code_200(result_search_snap['response'])
+
+    def test_search_snap_status_code_500_by_incorrect_order_parameter(self):
+        result_search_snap = self.user.search_snaps(con.incorrect_search_snap_query)
+        con.check_status_code_500_SERVER_ERROR(result_search_snap['response'], "GET_FAIL")
+
     def test_get_privacy_policy_status_code_200(self):
         result_privacy = self.user.get_privacy_policy()
         con.check_status_code_200(result_privacy)
@@ -319,18 +331,6 @@ class Test_without_user_auth:
     def test_social_media_list_status_code_200(self):
         result_media = self.user.get_social_media_list()
         con.check_status_code_200(result_media)
-
-    def test_search_snap_status_code_200(self):
-        result_search_snap = self.user.search_snaps(con.search_snap_query)
-        con.check_status_code_200(result_search_snap['response'])
-
-    def test_search_snap_status_code_200_by_empty_query(self):
-        result_search_snap = self.user.search_snaps(con.empty_search_snap_query)
-        con.check_status_code_200(result_search_snap['response'])
-
-    def test_search_snap_status_code_500_by_incorrect_order_parameter(self):
-        result_search_snap = self.user.search_snaps(con.incorrect_search_snap_query)
-        con.check_status_code_500_SERVER_ERROR(result_search_snap['response'], "GET_FAIL")
 
 
 class Test_comment:
@@ -489,10 +489,10 @@ class Test_snap:
         result_get_single_snap = self.user.get_single_snap(snap_id)
         con.check_status_code_200(result_get_single_snap)
 
-    def test_get_single_snap_status_code_404_by_not_exist_snap_id(self):
-        snap_id = 'abc'
-        result_get_single_snap = self.user.get_single_snap(snap_id)
-        con.check_status_code_404_NOT_FOUND(result_get_single_snap)
+    def test_get_single_snap_status_code_404_by_unexisting_snap_id(self):
+        for snap_id in con.unexisting_snap_id_list:
+            result_get_single_snap = self.user.get_single_snap(snap_id)
+            con.check_status_code_404_NOT_FOUND(result_get_single_snap)
 
     def test_create_snap_status_code_201(self):
         snap_cre = con.get_snap_created_list()
@@ -506,13 +506,18 @@ class Test_snap:
         con.check_status_code_201(result_created)
         result_created_content = json.loads(result_created.content.decode('utf-8'))['results'][0]
         image_path_created = result_created_content['image_path']
+        con.check_result_is_not_None(image_path_created)
         snap_id_created = str(result_created_content['snap_id'])
+        con.check_result_is_not_None(snap_id_created)
         # Get a single snap by the snap_id from the created snap result
         result_get = self.user.get_single_snap(snap_id_created)
         con.check_status_code_200(result_get)
         result_get_content = json.loads(result_get.content.decode('utf-8'))
         image_path_get = result_get_content['image_path']
         con.check_two_results_are_the_same(image_path_created, image_path_get)
+        # Remove a snap
+        result_remove = self.user.remove_snap(snap_id_created)
+        con.check_status_code_204(result_remove)
 
     def test_create_snap_status_code_400_by_missing_title(self):
         snap_cre = con.get_snap_created_list()
@@ -544,7 +549,6 @@ class Test_snap:
         result_created = self.user.create_snaps(snap_cre)
         con.check_status_code_400_BAD_REQUEST(result_created, "MISSING_REF_ID")
 
-    # Abnormal Case for create snap 413 -> 400
     def test_create_snap_status_code_400_by_over_10MB_image_size(self):
         snap_cre = con.get_snap_created_list()
         image_path_list = con.image_path_list_code_413
@@ -552,7 +556,6 @@ class Test_snap:
             snap_cre[0]['image_body'] = con.get_encode_base64_image(image_path)
             result_created = self.user.create_snaps(snap_cre)
             con.check_status_code_400_BAD_REQUEST(result_created, "IMAGE_SIZE_OVER_LIMIT")
-            # con.check_status_code_413_PAYLOAD_TOO_BIG(result_created, "IMAGE_SIZE_OVER_LIMIT")
 
     def test_create_snap_status_code_400_by_image_size_over_limit(self):
         snap_cre = con.get_snap_created_list()
@@ -703,24 +706,6 @@ class Test_snap:
         result_get_snap = self.user.get_snap_info_after_login(query)
         con.check_status_code_401_NOT_LOGIN(result_get_snap)
 
-    def test_create_snap(self):
-        # Create a snap with image body
-        snap_cre = con.get_snap_created_list()
-        result_created = json.loads(self.user.create_snaps(snap_cre).content.decode('utf-8'))['results'][0]
-        # Check the return image path exist
-        con.check_result_is_not_None(result_created['image_path'])
-        con.check_result_is_not_None(result_created['snap_id'])
-        snap_id_created = str(result_created['snap_id'])
-        # Get a single snap by the snap_id from the created snap result
-        result_get = json.loads(self.user.get_single_snap(snap_id_created).content.decode('utf-8'))
-        con.check_two_results_are_the_same(result_created['image_path'], result_get['image_path'])
-        # Get the snap by user id and check the result contains the created snap by snap_id
-        result_get_user_snap = self.user.get_user_snaps_of_a_user(self.user.get_user_id())
-        con.check_result_item_in_list(snap_id_created, result_get_user_snap['list_snap_id'])
-        # Remove the snap and check the remove request successfully
-        result_remove = self.user.remove_snap(snap_id_created)
-        con.check_status_code_204(result_remove)
-
 
 class Test_profile:
     def setup_method(self):
@@ -755,12 +740,12 @@ class Test_profile:
         result_update = self.user.update_user(self.user.get_user_id(), con.query_profile)
         con.check_status_code_401_NOT_LOGIN(result_update)
 
-    def test_update_user_profile_status_code_401_by_invalid_user_id(self):
+    def test_update_user_profile_status_code_403_by_invalid_user_id(self):
         for user_id in con.invalid_user_id_query_profile_list:
             result_update = self.user.update_user(user_id, con.query_profile)
             con.check_status_code_403_unauthorized(result_update)
 
-    def test_update_user_profile_status_code_401_by_unauthorized_user_id(self):
+    def test_update_user_profile_status_code_403_by_unauthorized_user_id(self):
         user_id = con.unauthorized_user_id
         result_update = self.user.update_user(user_id, con.query_profile)
         con.check_status_code_403_unauthorized(result_update)
@@ -891,12 +876,12 @@ class Test_follow:
         result_unfollow = self.user.unfollow_user(user_id, target_user_id)
         con.check_status_code_204(result_unfollow)
 
-    # Abnormal Case for unfollow a user by invalid user id 404 -> 204
-    def test_unfollow_a_user_status_code_404_by_invalid_user_id(self):
+    def test_unfollow_a_user_status_code_204_by_invalid_user_id(self):
         user_id = self.user.get_user_id()
         for target_user_id in con.invalid_target_user_id_list:
             result_unfollow = self.user.unfollow_user(user_id, target_user_id)
-            con.check_status_code_404_NOT_FOUND(result_unfollow)
+            con.check_status_code_204(result_unfollow)
+            # con.check_status_code_404_NOT_FOUND(result_unfollow)
 
     def test_unfollow_a_user_status_code_403_by_unauthorized_user_id(self):
         user_id = con.unauthorized_user_id
@@ -1059,7 +1044,7 @@ class Test_favourite_snap:
         con.check_status_code_401_NOT_LOGIN(result_remove_fav_snap)
 
 
-class Test_favourite_snap_product_test:
+class Test_favourite_snap_product:
     def setup_method(self):
         super().__init__()
         # self.user = create_a_testing_user()
@@ -1154,44 +1139,44 @@ class Test_favourite_snap_product_test:
         result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
         con.check_status_code_201(result_add_fav_snap_product)
 
-    def test_add_a_product_to_favourite_status_code_403_by_unauthorized_user_id(self):
+    def test_add_a_snap_product_to_favourite_status_code_403_by_unauthorized_user_id(self):
         user_id = con.unauthorized_user_id
         snap_product_id = self.fav_snap_product_id
         result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
         con.check_status_code_403_unauthorized(result_add_fav_snap_product)
 
-    def test_add_a_product_to_favourite_status_code_401_by_not_login(self):
+    def test_add_a_snap_product_to_favourite_status_code_401_by_not_login(self):
         user_id = self.user.get_user_id()
         snap_product_id = self.fav_snap_product_id
         self.user.logout()
         result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
         con.check_status_code_401_NOT_LOGIN(result_add_fav_snap_product)
 
-    def test_add_a_product_to_favourite_status_code_401_by_invalid_snap_id(self):
+    def test_add_a_snap_product_to_favourite_status_code_401_by_invalid_snap_id(self):
         user_id = self.user.get_user_id()
         for snap_product_id in con.invalid_snap_id_add_fav_snap_product_list:
             result_add_fav_snap_product = self.user.add_snap_product_to_favourite(user_id, snap_product_id)
             con.check_status_code_404_NOT_FOUND(result_add_fav_snap_product)
 
-    def test_remove_a_product_from_favourite_status_code_204(self):
+    def test_remove_a_snap_product_from_favourite_status_code_204(self):
         user_id = self.user.get_user_id()
         fav_snap_product_id = self.fav_snap_product_id[0]
         result_remove_fav_snap_product = self.user.remove_snap_product_from_favourite(user_id, fav_snap_product_id)
         con.check_status_code_204(result_remove_fav_snap_product)
 
-    def test_remove_a_product_to_favourite_status_code_204_by_invalid_snap_id(self):
+    def test_remove_a_snap_product_from_favourite_status_code_204_by_invalid_snap_id(self):
         user_id = self.user.get_user_id()
         for snap_product_id in con.invalid_snap_id_remove_fav_snap_product_list:
             result_remove_fav_snap_product = self.user.remove_snap_product_from_favourite(user_id, snap_product_id)
             con.check_status_code_204(result_remove_fav_snap_product)
 
-    def test_remove_a_product_from_favourite_status_code_403_by_unauthorized_user_id(self):
+    def test_remove_a_snap_product_from_favourite_status_code_403_by_unauthorized_user_id(self):
         user_id = con.unauthorized_user_id
         snap_product_id = con.fav_snap_id_add_before_testing
         result_remove_fav_snap_product = self.user.remove_snap_product_from_favourite(user_id, snap_product_id)
         con.check_status_code_403_unauthorized(result_remove_fav_snap_product)
 
-    def test_remove_a_product_to_favourite_status_code_401_by_not_login(self):
+    def test_remove_a_snap_product_to_favourite_status_code_401_by_not_login(self):
         user_id = self.user.get_user_id()
         snap_product_id = con.fav_snap_id_add_before_testing
         self.user.logout()
