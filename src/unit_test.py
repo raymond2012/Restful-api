@@ -129,14 +129,14 @@ class Test_general:
         result_forget = self.user.forget_password(email)
         con.check_status_code_200(result_forget)
 
-    def test_forget_password_status_code_400_by_missing_email(self):
-        result_forget = self.user.forget_password(con.missing_variable)
-        con.check_status_code_400_BAD_REQUEST(result_forget, "MISSING_EMAIL")
-
-    def test_forget_password_status_code_400_by_invalid_email(self):
+    def test_forget_password_status_code_200_by_invalid_email(self):
         for email in con.invalid_email_forget_pass:
             result_forget = self.user.forget_password(email)
             con.check_status_code_200(result_forget)
+
+    def test_forget_password_status_code_400_by_missing_email(self):
+        result_forget = self.user.forget_password(con.missing_variable)
+        con.check_status_code_400_BAD_REQUEST(result_forget, "MISSING_EMAIL")
 
     def test_report_a_user_status_code_201(self):
         report_param = self.report_user_param
