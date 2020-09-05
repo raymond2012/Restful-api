@@ -336,8 +336,8 @@ class Test_without_user_auth:
 class Test_comment:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
         # self.user.update_user(self.user.get_user_id, constant.user_profile)
 
@@ -348,7 +348,7 @@ class Test_comment:
         time.sleep(0.2)
 
     def setup_class(self):
-        # self.user = create_a_snap_create_user
+        #self.user = create_a_snap_create_user
         self.user_create_snap = User("test4@gmail.com", "12345678", "12345")
         self.user_create_snap.login()
         snap_create = self.user_create_snap.create_snaps(con.get_snap_created_list())
@@ -409,8 +409,8 @@ class Test_comment:
 class Test_snap:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
         self.snap_id = '7822'
         # self.user.update_user(self.user.get_user_id, constant.user_profile)
@@ -425,7 +425,6 @@ class Test_snap:
             self.user.remove_snap(str(snap_id))
         result_logout = self.user.logout()
         con.check_status_code_200(result_logout)
-        time.sleep(0.2)
 
     def setup_class(self):
         # self.user = create_a_snap_create_user()
@@ -710,8 +709,8 @@ class Test_snap:
 class Test_profile:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
         # result = self.user.upload_user_profile_pic(self.user.get_user_id(), con.image_name_profile_pic, con.image_body_profile_pic)
         # con.check_status_code_200(result)
@@ -818,8 +817,8 @@ class Test_profile:
 class Test_follow:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
 
     def teardown_method(self):
@@ -956,8 +955,8 @@ class Test_follow:
 class Test_favourite_snap:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
         result_search = self.user.search_snaps(dict(limit=10))
         con.check_status_code_200(result_search['response'])
@@ -1047,8 +1046,8 @@ class Test_favourite_snap:
 class Test_favourite_snap_product:
     def setup_method(self):
         super().__init__()
-        # self.user = create_a_testing_user()
-        self.user = User("test3@gmail.com", "12345677", "12345")
+        self.user = create_a_testing_user()
+        # self.user = User("test3@gmail.com", "12345677", "12345")
         self.user.login()
         for snap_id in self.fav_snap_product_id_list:
             result_add = self.user.add_snap_product_to_favourite(self.user.get_user_id(), str(snap_id))
