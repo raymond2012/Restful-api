@@ -43,3 +43,8 @@ This project tests the restful api by checking the status code
 #### Project Structure
 ##### Define *src* as a source folder
 ![image](https://github.com/raymond2012/Restful-api/blob/master/readme-image/project_structure.jpg?raw=true)
+
+
+### Documentation
+#### Test Case with Excel file
+https://github.com/raymond2012/Restful-api/blob/master/Restful-api.xlsx
